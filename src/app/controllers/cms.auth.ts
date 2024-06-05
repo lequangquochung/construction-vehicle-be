@@ -11,7 +11,7 @@ import {
   changePasswordSchema,
   updateSchema,
 } from '$validators/cms.auth';
-import * as service from '$services/auth';
+import * as service from '$services/cms.auth';
 import { Request } from 'express';
 import { ROLE } from '$enums/index';
 

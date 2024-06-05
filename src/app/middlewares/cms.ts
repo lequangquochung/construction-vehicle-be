@@ -6,7 +6,7 @@ import { verify } from 'jsonwebtoken';
 import log from '$helpers/log';
 const logger = log('Middle ware check token');
 import config from '$config';
-import { getAdminInformation } from '$services/auth';
+import { getAdminInformation } from '$services/cms.auth';
 
 const verifyAsync = promisify(verify) as any;
 interface IDecodeToken {

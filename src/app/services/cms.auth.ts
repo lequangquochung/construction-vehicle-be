@@ -30,6 +30,7 @@ export async function login(params: LoginParams): Promise<any> {
   });
 }
 
+
 export async function changePassword(userId: number, params: ChangePasswordParams) {
   const repoUser = getRepository(User);
   const { oldPassword, newPassword } = params;

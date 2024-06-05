@@ -1,26 +1,30 @@
 export enum ErrorCode {
-  Unknown_Error = 0,
-  Invalid_Input = 1,
-  Member_Blocked = 2,
-  Username_Or_Password_Invalid = 3,
-  Token_Not_Exist = 4,
-  User_Blocked = 5,
-  Token_Expired = 6,
+  Unknown_Error,
+  Invalid_Input,
+  Member_Blocked,
+  Username_Or_Password_Invalid,
+  Token_Not_Exist,
+  User_Blocked,
+  Token_Expired,
   /**The client not send the required token in header */
-  Refresh_Token_Not_Exist = 7,
+  Refresh_Token_Not_Exist,
   /**The client send the expire token or invalid token*/
-  Refresh_Token_Expire = 8,
+  Refresh_Token_Expire,
   /**The client do not have permission for this action. */
-  Permission_Denied = 9,
-  User_Not_Exist = 10,
-  Not_Found = 11,
-  Access_Denied = 12,
-  No_Data_Found = 13,
-  Employee_Not_Exist=14,
-  File_Not_Found=15,
-  Topic_Not_Exist=16,
-  Lab_Image_Not_Exist=17,
-  Lab_Service_Not_Exist=18,
+  Permission_Denied,
+  User_Not_Exist,
+  Not_Found,
+  Access_Denied,
+  No_Data_Found,
+  Employee_Not_Exist,
+  File_Not_Found,
+  Email_Existed,
+  Phone_Number_Already_exist,
+  ID_Or_Password_Invalid,
+  Username_Existed,
+  New_Password_Must_Be_Different,
+  Password_Invalid,
+  Category_Not_Exist,
 }
 
 export enum UserStatus {
@@ -39,7 +43,8 @@ export enum Gender {
 }
 
 export enum ROLE {
-  ADMIN = "ADMIN"
+  ADMIN = 'ADMIN',
+  USER = 'USER',
 }
 
 export enum Day {
