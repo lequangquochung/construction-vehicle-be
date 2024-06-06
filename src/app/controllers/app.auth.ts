@@ -20,7 +20,7 @@ export default class AuthController {
     const { refreshToken } = req.body;
 
     const token = await service.createRefreshToken(userId, refreshToken);
-    return { refreshToken: token.refreshToken, token: token.token };
+    return { refreshToken: token.refreshToken, accessToken: token.token };
   }
 
   @Post('/request-access-token', [checkRefreshToken])

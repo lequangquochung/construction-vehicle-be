@@ -13,7 +13,7 @@ export default class Category {
   @PrimaryGeneratedColumn({ name: 'id', type: 'int', unsigned: true })
   id: number;
 
-  @ManyToOne(() => Translation)
+  @ManyToOne(() => Translation, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'name_translation_id' })
   name: Translation;
 

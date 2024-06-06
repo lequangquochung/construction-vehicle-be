@@ -43,7 +43,7 @@ export async function updateCategory(params: UpdateCategoryDTO) {
     const categoryRepo = transaction.getRepository(Category);
     const translationRepo = transaction.getRepository(Translation);
 
-    const category = await categoryRepo.findOne(params.id);
+    const category = await categoryRepo.findOne(params.id, { relations: ['name'] });
     if (!category) {
       throw ErrorCode.Category_Not_Exist;
     }
@@ -67,7 +67,7 @@ export async function updateCategory(params: UpdateCategoryDTO) {
 }
 
 export async function getCategoryById(id: number) {
-  const category = await getRepository(Category).findOne(id);
+  const category = await getRepository(Category).findOne(id, { relations: ['name'] });
   if (!category) {
     throw ErrorCode.Category_Not_Exist;
   }
@@ -82,13 +82,13 @@ export async function getCategoryById(id: number) {
 export async function deleteCategoryById(id: number) {
   const categoryRepo = getRepository(Category);
 
-  const category = await categoryRepo.findOne(id);
+  const category = await categoryRepo.findOne(id, { relations: ['name'] });
   if (!category) {
     throw ErrorCode.Category_Not_Exist;
   }
-
-  await getRepository(Translation).delete(category.name.id);
-  await categoryRepo.delete(category);
+  const name = category.name;
+  await categoryRepo.remove(category);
+  await getRepository(Translation).remove(name);
 }
 
 interface ISearchCategory extends PagingParams {

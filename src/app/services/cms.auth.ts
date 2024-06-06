@@ -13,9 +13,9 @@ const verifyAsync = promisify(verify) as any;
 export async function login(params: LoginParams): Promise<any> {
   return await getConnection().transaction(async (transaction: EntityManager) => {
     const userRepository = getRepository(User);
-    const { email, password } = params;
+    const { username, password } = params;
 
-    const user = await userRepository.findOne({ email }, { select: ['id', 'password'] });
+    const user = await userRepository.findOne({ username }, { select: ['id', 'password'] });
     if (!user) throw ErrorCode.Username_Or_Password_Invalid;
     if (user.status === UserStatus.INACTIVE) throw ErrorCode.User_Blocked;
 
@@ -63,7 +63,7 @@ export async function generateTokenCms(userId: number): Promise<Token> {
   const [error] = await to(verifyAsync(oldRefreshToken, config.auth.AccessTokenExpire));
 
   if (error) {
-    const dataEncodeRefreshToken = pick(user, ['id', 'status', 'email', 'phoneNumber']);
+    const dataEncodeRefreshToken = pick(user, ['id', 'status', 'email', 'phoneNumber', 'role']);
     dataEncodeRefreshToken['type'] = 'userId';
     const newRefreshToken = generateRefreshToken(dataEncodeRefreshToken);
     await userRepository.update(userId, { refreshToken: newRefreshToken });

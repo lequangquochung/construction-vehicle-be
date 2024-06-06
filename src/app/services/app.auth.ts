@@ -68,7 +68,7 @@ export async function createRefreshToken(memberId: number, refreshToken: string)
 export async function generateToken(memberId: number) {
   const userRepository = getRepository(User);
   const member = await getUserById(memberId);
-  const dataEncode = pick(member, ['id', 'status', 'email', 'phoneNumber']);
+  const dataEncode = pick(member, ['id', 'status', 'email', 'phoneNumber', 'role']);
   dataEncode['type'] = 'memberId';
   const token = generateAccessToken(dataEncode);
   const oldRefreshToken = member.refreshToken;
@@ -82,7 +82,7 @@ export async function generateToken(memberId: number) {
     return { token, refreshToken: newRefreshToken };
   }
 
-  return { token, refreshToken: oldRefreshToken };
+  return { accessToken: token, refreshToken: oldRefreshToken };
 }
 
 export async function createAccessToken(memberId: number): Promise<string> {

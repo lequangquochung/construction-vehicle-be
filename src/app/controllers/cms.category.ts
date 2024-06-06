@@ -15,10 +15,10 @@ export default class CategoryController {
     return await service.createCategory(body);
   }
 
-  @Put('/:id')
+  @Put('/')
   @RequirePermission([ROLE.ADMIN])
   async updateCategory(req: Request) {
-    const body = { ...req.body, id: Number(req.params.id) };
+    const body = { ...req.body };
     validate(updateCategorySchema, body);
     return await service.updateCategory(body);
   }
