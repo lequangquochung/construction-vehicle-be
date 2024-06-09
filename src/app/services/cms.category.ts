@@ -2,11 +2,10 @@ import { EntityManager, getConnection, getRepository } from 'typeorm';
 import Category from '$entities/Category';
 import Translation from '$entities/Translation';
 import { ErrorCode } from '$enums/index';
-import { PagingParams } from '$interfaces/common';
+import { ITranslation, PagingParams } from '$interfaces/common';
 
 interface CreateCategoryDTO {
-  nameEng: string;
-  nameVie: string;
+  name: ITranslation;
   image: string;
 }
 
@@ -16,9 +15,8 @@ export async function createCategory(params: CreateCategoryDTO) {
     const translationRepo = transaction.getRepository(Translation);
 
     const nameTranslation = await translationRepo.save({
-      contentEng: params.nameEng,
-      contentVie: params.nameVie,
-      image: params.image,
+      contentEng: params.name.contentEng,
+      contentVie: params.name.contentVie,
       memo: 'category.name',
     });
 
@@ -32,8 +30,7 @@ export async function createCategory(params: CreateCategoryDTO) {
 }
 
 interface UpdateCategoryDTO {
-  nameEng: string;
-  nameVie: string;
+  name: ITranslation;
   image: string;
   id: number;
 }
@@ -49,8 +46,8 @@ export async function updateCategory(params: UpdateCategoryDTO) {
     }
 
     await translationRepo.update(category.name.id, {
-      contentEng: params.nameEng,
-      contentVie: params.nameVie,
+      contentEng: params.name.contentEng,
+      contentVie: params.name.contentVie,
     });
 
     await categoryRepo.update(params.id, {
@@ -59,8 +56,10 @@ export async function updateCategory(params: UpdateCategoryDTO) {
 
     return {
       id: params.id,
-      nameEng: params.nameEng,
-      nameVie: params.nameVie,
+      name: {
+        contentEng: params.name.contentEng,
+        contentVie: params.name.contentVie,
+      },
       image: category.image,
     };
   });
@@ -73,25 +72,29 @@ export async function getCategoryById(id: number) {
   }
   return {
     id,
-    nameEng: category.name.contentEng,
-    nameVie: category.name.contentVie,
+    name: {
+      contentEng: category.name.contentEng,
+      contentVie: category.name.contentVie,
+    },
     image: category.image,
   };
 }
 
 export async function deleteCategoryById(id: number) {
-  const categoryRepo = getRepository(Category);
+  return await getConnection().transaction(async (transaction: EntityManager) => {
+    const categoryRepo = transaction.getRepository(Category);
 
-  const category = await categoryRepo.findOne(id, { relations: ['name'] });
-  if (!category) {
-    throw ErrorCode.Category_Not_Exist;
-  }
-  const name = category.name;
-  await categoryRepo.remove(category);
-  await getRepository(Translation).remove(name);
+    const category = await categoryRepo.findOne(id, { relations: ['name'] });
+    if (!category) {
+      throw ErrorCode.Category_Not_Exist;
+    }
+    const name = category.name;
+    await categoryRepo.remove(category);
+    await transaction.getRepository(Translation).remove(name);
+  });
 }
 
-interface ISearchCategory extends PagingParams {
+interface ISearchCategory {
   keyword?: string;
 }
 
@@ -104,13 +107,23 @@ export async function getCategories(params: ISearchCategory) {
     .where('1=1');
 
   if (params.keyword) {
-    query.andWhere('nt.contentEng LIKE :keyword OR nt.contentVie LIKE :keyword', {
+    query.andWhere('r.id = :id OR nt.contentEng LIKE :keyword OR nt.contentVie LIKE :keyword', {
+      id: params.keyword,
       keyword: '%' + params.keyword + '%',
     });
   }
 
   const total = await query.getCount();
-  const data = await query.skip(params.skip).take(params.take).getMany();
-
-  return { data, total };
+  const data = await query.getRawMany();
+  return {
+    data: data.map((d) => ({
+      id: d.id,
+      name: {
+        contentEng: d.nameEng,
+        contentVie: d.nameVie,
+        image: d.image,
+      },
+    })),
+    total,
+  };
 }

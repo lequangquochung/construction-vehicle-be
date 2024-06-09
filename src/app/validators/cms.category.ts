@@ -1,17 +1,22 @@
 export const createCategorySchema: AjvSchema = {
   type: 'object',
-  required: ['nameEng', 'nameVie', 'image'],
+  required: ['name', 'image'],
   additionalProperties: false,
   properties: {
-    nameEng: {
-      type: 'string',
-      minLength: 1,
-      maxLength: 255,
-    },
-    nameVie: {
-      type: 'string',
-      minLength: 1,
-      maxLength: 255,
+    name: {
+      type: 'object',
+      properties: {
+        contentEng: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 255,
+        },
+        contentVie: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 255,
+        },
+      },
     },
     image: {
       type: 'string',
@@ -23,18 +28,23 @@ export const createCategorySchema: AjvSchema = {
 
 export const updateCategorySchema: AjvSchema = {
   type: 'object',
-  required: ['id', 'nameEng', 'nameVie', 'image'],
+  required: ['id', 'name', 'image'],
   additionalProperties: false,
   properties: {
-    nameEng: {
-      type: 'string',
-      minLength: 1,
-      maxLength: 255,
-    },
-    nameVie: {
-      type: 'string',
-      minLength: 1,
-      maxLength: 255,
+    name: {
+      type: 'object',
+      properties: {
+        contentEng: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 255,
+        },
+        contentVie: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 255,
+        },
+      },
     },
     image: {
       type: 'string',

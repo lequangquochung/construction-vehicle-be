@@ -25,6 +25,7 @@ export enum ErrorCode {
   New_Password_Must_Be_Different=21,
   Password_Invalid=22,
   Category_Not_Exist=23,
+  Product_Not_Exist=24,
 }
 
 export enum UserStatus {

@@ -4,7 +4,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
   CreateDateColumn,
-  OneToOne,
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
@@ -15,7 +14,7 @@ export default class Product {
   @PrimaryGeneratedColumn({ name: 'id', type: 'int', unsigned: true })
   id: number;
 
-  @ManyToOne(() => Translation)
+  @ManyToOne(() => Translation, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'name_translation_id' })
   name: Translation;
 
@@ -23,7 +22,7 @@ export default class Product {
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  @ManyToOne(() => Translation)
+  @ManyToOne(() => Translation, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'description_translation_id' })
   description: Translation;
 
@@ -36,7 +35,7 @@ export default class Product {
   @Column({ name: 'status', type: 'tinyint', comment: '0: Out of stock, 1: Available.' })
   status: number;
 
-  @Column({ name: 'amount', type: 'int' })
+  @Column({ name: 'amount', type: 'int', nullable: true })
   amount: number | 0;
 
   @Column({ name: 'price', type: 'numeric', nullable: true })
