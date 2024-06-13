@@ -6,8 +6,10 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import User from './User';
+import OrderDetail from './OrderDetail';
 @Entity('order')
 export default class Order {
   @PrimaryGeneratedColumn({ name: 'id', type: 'int', unsigned: true })
@@ -15,10 +17,11 @@ export default class Order {
 
   @Column({
     name: 'status',
-    type: 'tinyint',
-    comment: '0: New, 1: Accept, 2: Cancel, 3: Finished.',
+    type: 'varchar',
+    length: 255,
+    comment: 'NEW, CANCELED, PROCESSING, FINISHED',
   })
-  status: number;
+  status: string;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user_id' })
@@ -32,6 +35,9 @@ export default class Order {
 
   @Column({ name: 'total_price', type: 'numeric' })
   totalPrice: number | 0;
+
+  @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
+  orderDetails: OrderDetail[];
 
   @CreateDateColumn({ name: 'created_date', type: 'datetime', nullable: true })
   createdDate: Date;

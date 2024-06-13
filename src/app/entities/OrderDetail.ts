@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import Product from './Product';
+import Order from './Order';
 @Entity('order_detail')
 export default class OrderDetail {
   @PrimaryGeneratedColumn({ name: 'id', type: 'int', unsigned: true })
@@ -17,11 +18,15 @@ export default class OrderDetail {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  @Column({ name: 'email', type: 'varchar', length: 255 })
-  email: string;
+  @ManyToOne(() => Order)
+  @JoinColumn({ name: 'order_id' })
+  order: Order;
 
-  @Column({ name: 'phone_number', type: 'varchar', length: 255 })
-  phoneNumber: string;
+  @Column({ name: 'amount', type: 'int', nullable: true })
+  amount: number | 0;
+
+  @Column({ name: 'price', type: 'numeric', nullable: true })
+  price: number;
 
   @CreateDateColumn({ name: 'created_date', type: 'datetime', nullable: true })
   createdDate: Date;
