@@ -11,17 +11,15 @@ interface IDecodeToken {
   id: number;
   status: AccountStatus;
   type: 'userId';
-  permissions: string[];
+  role: string[];
 }
 
 export function checkToken(req: Request, res: Response, next: NextFunction) {
-  next();
   let token = req.headers['authorization'] || '';
   token = token.replace('Bearer ', '');
   if (!token) {
     throw new HttpError(ErrorCode.Token_Not_Exist);
   }
-
   verifyAsync(token, process.env.ACCESS_TOKEN_SECRET)
     .then(async (decoded: IDecodeToken) => {
       try {
@@ -30,7 +28,7 @@ export function checkToken(req: Request, res: Response, next: NextFunction) {
         }
 
         req[decoded.type] = decoded.id;
-        req['permissions'] = decoded.permissions;
+        req['permissions'] = decoded.role;
         next();
       } catch (error) {
         next(new HttpError(error));
@@ -66,7 +64,7 @@ export function checkRefreshToken(req: Request, res: Response, next: NextFunctio
     });
 }
 
-export function checkPermission(permissions: ROLE[]) {
+export function checkUserPermission(permissions: ROLE[]) {
   return function (req: Request, res: Response, next: NextFunction) {
     const hasOwnPermission = permissions.some((permission) => req.permissions.includes(permission));
     if (!hasOwnPermission) {

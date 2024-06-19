@@ -6,7 +6,7 @@ import { pick } from 'lodash';
 import { promisify } from 'util';
 import to from 'await-to-js';
 import config from '$config';
-import { AccountStatus, ErrorCode } from '$enums/index';
+import { AccountStatus, ErrorCode, ROLE } from '$enums/index';
 
 const verifyAsync = promisify(verify) as any;
 
@@ -17,24 +17,14 @@ export async function getUserById(userId: number) {
 }
 
 interface LoginParams {
-  email: string;
-  phoneNumber: string;
+  username: string;
   password: string;
 }
 export async function login(params: LoginParams) {
   const userRepository = getRepository(User);
-  const { email, phoneNumber, password } = params;
+  const { username, password } = params;
   const querybuilder = userRepository.createQueryBuilder('member').where('1=1');
-  if (email) {
-    querybuilder.andWhere('member.email = :email', { email });
-  }
-
-  if (phoneNumber) {
-    querybuilder.andWhere(
-      `REGEXP_REPLACE(member.phoneNumber, '[^A-Za-z0-9 ]', '') = :phoneNumber`,
-      { phoneNumber: phoneNumber.replace('-', '') }
-    );
-  }
+  querybuilder.andWhere('member.username = :username', { username });
   const member = await querybuilder.getOne();
   if (!member) throw ErrorCode.ID_Or_Password_Invalid;
   if (member.status !== AccountStatus.ACTIVE) {
@@ -113,7 +103,7 @@ interface RegisterParams {
   birthday?: string;
   email: string;
   password: string;
-  gender?: number;
+  gender?: string;
 }
 
 export async function register(params: RegisterParams) {
@@ -138,6 +128,7 @@ export async function register(params: RegisterParams) {
     const member = await userRepo.save({
       ...params,
       password,
+      role: ROLE.USER,
     });
     return {
       id: member.id,

@@ -39,10 +39,15 @@ export const registerSchema: AjvSchema = {
   required: ['fullName', 'phoneNumber', 'email', 'password'],
   additionalProperties: false,
   properties: {
-    fullName: {
+    username: {
       type: 'string',
       minLength: 1,
       maxLength: 20,
+    },
+    fullName: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 255,
     },
     phoneNumber: {
       type: ['string', 'null'],
@@ -53,8 +58,8 @@ export const registerSchema: AjvSchema = {
       minLength: 1,
     },
     gender: {
-      type: 'number',
-      maxLength: 1,
+      type: 'string',
+      minLength: 1,
     },
     email: {
       type: 'string',

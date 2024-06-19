@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { checkPermission } from '$middlewares/common';
 import { checkToken } from '$middlewares/common';
-import { checkTokenCMS } from '$middlewares/cms';
+import { checkPermission, checkTokenCMS } from '$middlewares/cms';
 import log from '$helpers/log';
 import { done, HttpErrorController } from './response';
 import { ROLE } from '$enums/index';
@@ -39,11 +38,6 @@ interface PermissionsInterface {
 interface MiddlewareCallback {
   (req: Request, res: Response, next: NextFunction): Promise<void>;
 }
-export const COMMON = (routePrefix: string, version: string = '/common'): ClassDecorator => {
-  return (targetClass: any) => {
-    handleClassDecorator(targetClass, routePrefix, version, checkToken);
-  };
-};
 
 export const CMS = (routePrefix: string, version: string = '/cms'): ClassDecorator => {
   return (targetClass: any) => {

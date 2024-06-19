@@ -61,7 +61,7 @@ connectToDatabase()
       admin.email = "cogioiducanh@gmail.com";
       admin.role = ROLE.ADMIN;
       admin.phoneNumber = "0927633733";
-      admin.gender = 1;
+      admin.gender = "MALE";
       admin.fullName = "anphuc";
       admin.password = password;
       admin.status = AccountStatus.ACTIVE;

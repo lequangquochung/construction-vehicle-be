@@ -1,11 +1,12 @@
 export const loginSchema: AjvSchema = {
   type: 'object',
-  required: ['email', 'password'],
+  required: ['username', 'password'],
   additionalProperties: false,
   properties: {
-    email: {
-      type: ['string', 'null'],
-      pattern: '^(\\S+([\\.\\+-]?\\w+)*@\\w+([\\.-]?\\w+)*(\\.\\w{2,3})+)$'
+    username: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 255,
     },
     password: {
       type: 'string',

@@ -152,6 +152,7 @@ export async function getOrderById(orderId: number) {
 
 interface ISearchOrder {
   keyword?: string;
+  status?: string;
 }
 
 export async function getOrders(params: ISearchOrder) {
@@ -174,6 +175,11 @@ export async function getOrders(params: ISearchOrder) {
     query.andWhere('o.id = :id OR o.email LIKE :keyword OR o.phoneNumber LIKE :keyword', {
       id: params.keyword,
       keyword: '%' + params.keyword + '%',
+    });
+  }
+  if (params.status) {
+    query.andWhere('o.status = :status', {
+      status: params.status,
     });
   }
 

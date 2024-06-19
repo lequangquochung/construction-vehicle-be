@@ -1,12 +1,13 @@
-import { APP, Post, Put } from '$helpers/decorator';
-import { checkRefreshToken } from '$middlewares/common';
+import { APP, Post, Put, RequirePermission } from '$helpers/decorator';
+import { checkRefreshToken, checkToken, checkUserPermission } from '$middlewares/common';
 import { validate } from '$helpers/ajv';
 import { changePasswordSchema, loginSchema, registerSchema } from '$validators/app.auth';
 import * as service from '$services/app.auth';
 import { Request } from 'express';
+import { ROLE } from '$enums/index';
 
 @APP('/auth')
-export default class AuthController {
+export default class UserAuthController {
   @Post('/login', [])
   async login(req: Request) {
     const body = req.body;
@@ -14,25 +15,18 @@ export default class AuthController {
     return await service.login(body);
   }
 
-  @Post('/refresh-token', [checkRefreshToken])
-  async requestToken(req: Request) {
-    const userId = req.body.userId;
-    const { refreshToken } = req.body;
-
-    const token = await service.createRefreshToken(userId, refreshToken);
-    return { refreshToken: token.refreshToken, accessToken: token.token };
-  }
-
   @Post('/request-access-token', [checkRefreshToken])
   async requestAccessToken(req: Request) {
-    const userId = req.body.userId;
+    const userId = req.userId;
     const accessToken = await service.createAccessToken(userId);
     return { accessToken };
   }
 
-  @Put('/change-password')
-  async changePassword(req: Request) {
-    const { userId, body } = req;
+  @Put('/user-change-password')
+  @RequirePermission([ROLE.USER])
+  async userChangePassword(req: Request) {
+    const userId = req.userId;
+    const body = req.body;
     validate(changePasswordSchema, body);
     await service.changePassword(userId, body);
     return;

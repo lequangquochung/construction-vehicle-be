@@ -19,8 +19,8 @@ export default class User {
   @Column({ name: 'full_name', type: 'varchar', length: 255, nullable: true })
   fullName: string | null;
 
-  @Column({ name: 'gender', type: 'tinyint', nullable: true, comment: '1: male, 2: female' })
-  gender: number | null;
+  @Column({ name: 'gender', type: 'varchar', nullable: true })
+  gender: string | null;
 
   @Column({ name: 'email', type: 'varchar', length: 255, unique: true })
   email: string;
