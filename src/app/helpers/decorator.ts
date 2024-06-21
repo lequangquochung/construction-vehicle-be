@@ -25,6 +25,11 @@ interface RouteInterface {
   method: RequestMethod;
   middlewares: Function[];
   propertyKey: string;
+  public?: boolean; // Add a public flag to handle public routes
+}
+
+interface RouteOptions {
+  public?: boolean;
 }
 
 /**
@@ -53,10 +58,11 @@ export const APP = (routePrefix: string, version: string = ''): ClassDecorator =
 
 export const Method = (
   path: string,
-  middlewares: Function[],
-  method: RequestMethod
+  middlewares: Function[] = [],
+  method: RequestMethod,
+  options: RouteOptions = {}
 ): MethodDecorator => {
-  return (target: ClassDecorator, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
     if (!Reflect.hasOwnMetadata('routes', target.constructor)) {
       Reflect.defineMetadata('routes', [], target.constructor);
     }
@@ -66,6 +72,7 @@ export const Method = (
       method,
       middlewares,
       propertyKey,
+      public: options.public,
     });
     Reflect.defineMetadata('routes', routes, target.constructor);
   };
@@ -73,6 +80,10 @@ export const Method = (
 
 export const Get = (path: string, middlewares?: Function[]): MethodDecorator => {
   return Method(path, middlewares, RequestMethod.GET);
+};
+
+export const GetPublic = (path: string, middlewares: Function[] = []): MethodDecorator => {
+  return Method(path, middlewares, RequestMethod.GET, { public: true });
 };
 
 export const Post = (path: string, middlewares?: Function[]): MethodDecorator => {

@@ -27,7 +27,7 @@ export enum ErrorCode {
   Category_Not_Exist = 23,
   Product_Not_Exist = 24,
   Order_Not_exist = 25,
-  Order_Must_Be_Processing=26,
+  Order_Must_Be_Processing = 26,
 }
 
 export enum UserStatus {
@@ -81,8 +81,13 @@ export enum AccountStatus {
 }
 
 export enum OrderStatus {
-  NEW = "NEW",
-  PROCESSING = "PROCESSING",
-  CANCELED = "CANCELED",
-  FINISHED = "FINISHED",
+  NEW = 'NEW',
+  PROCESSING = 'PROCESSING',
+  CANCELED = 'CANCELED',
+  FINISHED = 'FINISHED',
+}
+
+export enum LangKey {
+  ENG = 'en',
+  VIE = 'vi',
 }

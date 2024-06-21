@@ -121,8 +121,8 @@ export async function getCategories(params: ISearchCategory) {
       name: {
         contentEng: d.nameEng,
         contentVie: d.nameVie,
-        image: d.image,
       },
+      image: d.image,
     })),
     total,
   };
