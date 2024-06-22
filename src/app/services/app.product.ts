@@ -1,0 +1,107 @@
+import Category from '$entities/Category';
+import Product from '$entities/Product';
+import ProductGallery from '$entities/ProductGallery';
+import Translation from '$entities/Translation';
+import { ErrorCode, LangKey } from '$enums/index';
+import { getRepository } from 'typeorm';
+
+interface ISearchProduct {
+  keyword?: string;
+  categoryId: number;
+  langKey: LangKey;
+}
+
+export async function userGetProducts(params: ISearchProduct) {
+  const query = getRepository(Product)
+    .createQueryBuilder('p')
+    .innerJoin(Translation, 'nt', 'nt.id = p.name.id')
+    .innerJoin(Translation, 'dt', 'dt.id = p.description.id')
+    .innerJoin(Category, 'c', 'c.id = p.category.id')
+    .innerJoin(Translation, 'cnt', 'cnt.id = c.name.id');
+
+  if (params.langKey === LangKey.ENG) {
+    query.select([
+      'p.id as id',
+      'nt.contentEng as name',
+      'dt.contentEng as description',
+      'c.id as categoryId',
+      'cnt.contentEng as categoryName',
+      'p.model as model',
+      'p.image as image',
+    ]);
+  } else {
+    query.select([
+      'p.id as id',
+      'nt.contentVie as name',
+      'dt.contentVie as description',
+      'c.id as categoryId',
+      'cnt.contentVie as categoryName',
+      'p.model as model',
+      'p.image as image',
+    ]);
+  }
+  query.where('1=1');
+
+  if (params.keyword) {
+    query.andWhere('p.id = :id OR nt.contentEng LIKE :keyword OR nt.contentVie LIKE :keyword', {
+      id: params.keyword,
+      keyword: '%' + params.keyword + '%',
+    });
+  }
+
+  if (params.categoryId) {
+    query.andWhere('p.category.id = :categoryId', {
+      categoryId: params.categoryId,
+    });
+  }
+  query.orderBy('p.id', 'ASC');
+  const [data, total] = await Promise.all([query.getRawMany(), query.getCount()]);
+  return {
+    data: data.map((p) => ({
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      category: {
+        id: p.categoryId,
+        name: p.categoryName,
+      },
+      model: p.model,
+      image: p.image,
+    })),
+    total,
+  };
+}
+
+export async function userGetPrductById(id: number, langKey: LangKey) {
+  const product = await getRepository(Product).findOne(id, {
+    relations: ['name', 'description', 'category', 'category.name'],
+  });
+
+  if (!product) {
+    throw ErrorCode.Product_Not_Exist;
+  }
+
+  const gallery = await getRepository(ProductGallery).find({
+    product: product,
+  });
+
+  return {
+    id: id,
+    name: langKey === LangKey.ENG ? product.name.contentEng : product.name.contentVie,
+    description:
+      langKey === LangKey.ENG ? product.description.contentEng : product.description.contentVie,
+    category: {
+      id: product.category.id,
+      name:
+        langKey === LangKey.ENG
+          ? product.category.name.contentEng
+          : product.category.name.contentVie,
+    },
+    model: product.model,
+    status: product.status,
+    amount: product.amount,
+    price: product.price,
+    image: product.image,
+    gallery: gallery.map((e) => e.image),
+  };
+}

@@ -2,7 +2,7 @@ import Category from '$entities/Category';
 import Product from '$entities/Product';
 import ProductGallery from '$entities/ProductGallery';
 import Translation from '$entities/Translation';
-import { CommonStatus, ErrorCode } from '$enums/index';
+import { CommonStatus, ErrorCode, LangKey, ProductStatus } from '$enums/index';
 import { ITranslation } from '$interfaces/common';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 
@@ -46,7 +46,7 @@ export async function createProduct(params: CreateProductDTO) {
       category: category,
       name: nameTranslation,
       description: descriptionTranslation,
-      status: CommonStatus.ACTIVE,
+      status: ProductStatus.AVAILABLE,
       image: params.gallery[0],
     });
 
@@ -106,7 +106,7 @@ interface UpdateProductDTO {
   amount?: number | 0;
   price?: number;
   gallery: string[];
-  status: CommonStatus;
+  status: ProductStatus;
 }
 
 export async function updateProduct(params: UpdateProductDTO) {

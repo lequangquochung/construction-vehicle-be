@@ -32,8 +32,8 @@ export default class Product {
   @Column({ name: 'contact', type: 'varchar', length: 255 })
   contact: string;
 
-  @Column({ name: 'status', type: 'tinyint', comment: '0: Out of stock, 1: Available.' })
-  status: number;
+  @Column({ name: 'status', type: 'tinyint', comment: 'AVAILABLE, UNAVAILABLE' })
+  status: string;
 
   @Column({ name: 'amount', type: 'int', nullable: true })
   amount: number | 0;

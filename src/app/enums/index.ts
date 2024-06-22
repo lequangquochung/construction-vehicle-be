@@ -91,3 +91,8 @@ export enum LangKey {
   ENG = 'en',
   VIE = 'vi',
 }
+
+export enum ProductStatus {
+  AVAILABLE = 'AVAILABLE',
+  UNAVAILABLE = 'UNAVAILABLE',
+}
