@@ -32,7 +32,7 @@ export default class Product {
   @Column({ name: 'contact', type: 'varchar', length: 255 })
   contact: string;
 
-  @Column({ name: 'status', type: 'tinyint', comment: 'AVAILABLE, UNAVAILABLE' })
+  @Column({ name: 'status', type: 'varchar', length: 255, comment: 'AVAILABLE, UNAVAILABLE' })
   status: string;
 
   @Column({ name: 'amount', type: 'int', nullable: true })

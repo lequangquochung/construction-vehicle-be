@@ -28,6 +28,7 @@ export function checkToken(req: Request, res: Response, next: NextFunction) {
         }
 
         req[decoded.type] = decoded.id;
+        req['userId'] = decoded.id;
         req['permissions'] = decoded.role;
         next();
       } catch (error) {

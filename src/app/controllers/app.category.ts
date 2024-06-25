@@ -1,5 +1,5 @@
 import { LangKey } from '$enums/index';
-import { APP, Get, GetPublic } from '$helpers/decorator';
+import { APP, GetPublic } from '$helpers/decorator';
 import * as service from '$services/app.category';
 import { Request } from 'express';
 

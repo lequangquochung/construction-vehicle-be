@@ -25,11 +25,6 @@ interface RouteInterface {
   method: RequestMethod;
   middlewares: Function[];
   propertyKey: string;
-  public?: boolean; // Add a public flag to handle public routes
-}
-
-interface RouteOptions {
-  public?: boolean;
 }
 
 /**
@@ -58,11 +53,10 @@ export const APP = (routePrefix: string, version: string = ''): ClassDecorator =
 
 export const Method = (
   path: string,
-  middlewares: Function[] = [],
-  method: RequestMethod,
-  options: RouteOptions = {}
+  middlewares: Function[],
+  method: RequestMethod
 ): MethodDecorator => {
-  return (target: any, propertyKey: string, descriptor: PropertyDescriptor) => {
+  return (target: ClassDecorator, propertyKey: string, descriptor: PropertyDescriptor) => {
     if (!Reflect.hasOwnMetadata('routes', target.constructor)) {
       Reflect.defineMetadata('routes', [], target.constructor);
     }
@@ -72,18 +66,45 @@ export const Method = (
       method,
       middlewares,
       propertyKey,
-      public: options.public,
     });
     Reflect.defineMetadata('routes', routes, target.constructor);
   };
 };
 
-export const Get = (path: string, middlewares?: Function[]): MethodDecorator => {
-  return Method(path, middlewares, RequestMethod.GET);
+export const GetPublic = (path: string): MethodDecorator => {
+  return (target: ClassDecorator, propertyKey: string, descriptor: PropertyDescriptor) => {
+    if (!Reflect.hasOwnMetadata('publicRoutes', target.constructor)) {
+      Reflect.defineMetadata('publicRoutes', [], target.constructor);
+    }
+    const publicRoutes: RouteInterface[] = Reflect.getMetadata('publicRoutes', target.constructor);
+    publicRoutes.push({
+      path,
+      method: RequestMethod.GET,
+      middlewares: [],
+      propertyKey,
+    });
+    Reflect.defineMetadata('publicRoutes', publicRoutes, target.constructor);
+  };
 };
 
-export const GetPublic = (path: string, middlewares: Function[] = []): MethodDecorator => {
-  return Method(path, middlewares, RequestMethod.GET, { public: true });
+export const PostPublic = (path: string): MethodDecorator => {
+  return (target: ClassDecorator, propertyKey: string, descriptor: PropertyDescriptor) => {
+    if (!Reflect.hasOwnMetadata('publicRoutes', target.constructor)) {
+      Reflect.defineMetadata('publicRoutes', [], target.constructor);
+    }
+    const publicRoutes: RouteInterface[] = Reflect.getMetadata('publicRoutes', target.constructor);
+    publicRoutes.push({
+      path,
+      method: RequestMethod.POST,
+      middlewares: [],
+      propertyKey,
+    });
+    Reflect.defineMetadata('publicRoutes', publicRoutes, target.constructor);
+  };
+};
+
+export const Get = (path: string, middlewares?: Function[]): MethodDecorator => {
+  return Method(path, middlewares, RequestMethod.GET);
 };
 
 export const Post = (path: string, middlewares?: Function[]): MethodDecorator => {
@@ -157,6 +178,10 @@ function handleClassDecorator(
     Reflect.defineMetadata('routePermissions', [], targetClass);
   }
 
+  if (!Reflect.hasOwnMetadata('publicRoutes', targetClass)) {
+    Reflect.defineMetadata('publicRoutes', [], targetClass);
+  }
+
   const rootPath = version + routePrefix;
   const instance = new targetClass();
 
@@ -165,7 +190,9 @@ function handleClassDecorator(
     targetClass
   );
   const routes = Reflect.getMetadata('routes', targetClass) as RouteInterface[];
+  const publicRoutes = Reflect.getMetadata('publicRoutes', targetClass) as RouteInterface[];
 
+  // Handle authenticated routes
   routes.forEach((route: RouteInterface) => {
     route.middlewares = route.middlewares ? route.middlewares : [defaultMiddleware];
 
@@ -175,6 +202,15 @@ function handleClassDecorator(
       route.middlewares.push(checkPermission(routePermission.permissions));
     }
 
+    (RootRoute as any)[route.method](
+      rootPath + route.path,
+      route.middlewares,
+      catchError(instance[route.propertyKey], targetClass.name)
+    );
+  });
+
+  // Handle public routes
+  publicRoutes.forEach((route: RouteInterface) => {
     (RootRoute as any)[route.method](
       rootPath + route.path,
       route.middlewares,

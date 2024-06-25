@@ -3,6 +3,7 @@ import OrderDetail from '$entities/OrderDetail';
 import Product from '$entities/Product';
 import User from '$entities/User';
 import { ErrorCode, OrderStatus } from '$enums/index';
+import moment from 'moment';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 
 interface CreateOrderDTO {
@@ -33,22 +34,8 @@ export async function createOrder(params: CreateOrderDTO) {
       }
     }
 
-    const orderDetails: OrderDetail[] = [];
-    params.details.forEach(async (detail) => {
-      const product = await productRepo.findOne(detail.productId);
-      if (!product) {
-        throw ErrorCode.Product_Not_Exist;
-      }
-      const orderDetai = await orderDetailRepo.save({
-        product: product,
-        amount: detail.amount,
-        price: detail.price,
-      });
-      orderDetails.push(orderDetai);
-    });
-
     let totalPrice = 0;
-    orderDetails.forEach((detail) => {
+    params.details.forEach((detail) => {
       if (!detail.price) {
         totalPrice = null;
         return;
@@ -56,13 +43,28 @@ export async function createOrder(params: CreateOrderDTO) {
         totalPrice += detail.price;
       }
     });
-    await orderRepo.save({
+    const order = await orderRepo.save({
       status: OrderStatus.NEW,
       user: user,
       email: params.email,
       phoneNumber: params.phoneNumber,
       totalPrice: totalPrice,
     });
+
+    const orderDetails: OrderDetail[] = [];
+    for (const detail of params.details) {
+      const product = await productRepo.findOne(detail.productId);
+      if (!product) {
+        throw ErrorCode.Product_Not_Exist;
+      }
+      const orderDetail = await orderDetailRepo.save({
+        order: order,
+        product: product,
+        amount: detail.amount,
+        price: detail.price,
+      });
+      orderDetails.push(orderDetail);
+    }
   });
 }
 
@@ -153,28 +155,32 @@ export async function getOrderById(orderId: number) {
 interface ISearchOrder {
   keyword?: string;
   status?: string;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 export async function getOrders(params: ISearchOrder) {
   const query = getRepository(Order)
     .createQueryBuilder('o')
-    .innerJoin(User, 'u', 'u.id = o.user.id')
+    .leftJoinAndMapOne('o.user', User, 'u', 'u.id = o.user.id')
     .select([
       'o.id as id',
-      'o.user.username as username',
-      'o.user.fullName as fullName',
+      'u.id as userId',
+      'u.username as username',
+      'u.fullName as fullName',
       'o.email as email',
       'o.phoneNumber as phoneNumber',
       'o.status as status',
       'o.totalPrice as totalPrice',
+      'o.createdDate as createdDate',
     ])
     .orderBy('o.id', 'ASC')
     .where('1=1');
 
   if (params.keyword) {
-    query.andWhere('o.id = :id OR o.email LIKE :keyword OR o.phoneNumber LIKE :keyword', {
+    query.andWhere('o.id = :id OR o.email = :keyword OR o.phoneNumber = :keyword', {
       id: params.keyword,
-      keyword: '%' + params.keyword + '%',
+      keyword: params.keyword,
     });
   }
   if (params.status) {
@@ -182,11 +188,33 @@ export async function getOrders(params: ISearchOrder) {
       status: params.status,
     });
   }
+  if (params.startDate) {
+    query.andWhere('o.createdDate >= :startDate', {
+      startDate: params.startDate,
+    });
+  }
+  if (params.endDate) {
+    query.andWhere('o.createdDate <= :endDate', {
+      endDate: params.endDate,
+    });
+  }
 
   const total = await query.getCount();
   const data = await query.getRawMany();
   return {
-    data,
+    data: data.map((o) => ({
+      id: o.id,
+      user: {
+        id: o.userId,
+        username: o.username,
+        fullName: o.fullName,
+      },
+      email: o.email,
+      phoneNumber: o.phoneNumber,
+      status: o.status,
+      totalPrice: o.totalPrice,
+      createdDate: moment(o.createdDate).format('YYYY-MM-DD HH:mm:ss'),
+    })),
     total,
   };
 }

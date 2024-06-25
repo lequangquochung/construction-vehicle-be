@@ -4,7 +4,7 @@ export const createOrderSchema: AjvSchema = {
   additionalProperties: false,
   properties: {
     userId: {
-      type: 'number',
+      type: ['null', 'number'],
       minimum: 1,
     },
     email: {

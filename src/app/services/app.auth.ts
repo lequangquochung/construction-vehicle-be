@@ -59,14 +59,14 @@ export async function generateToken(memberId: number) {
   const userRepository = getRepository(User);
   const member = await getUserById(memberId);
   const dataEncode = pick(member, ['id', 'status', 'email', 'phoneNumber', 'role']);
-  dataEncode['type'] = 'memberId';
+  dataEncode['type'] = 'userId';
   const token = generateAccessToken(dataEncode);
   const oldRefreshToken = member.refreshToken;
   const [error] = await to(verifyAsync(oldRefreshToken, config.auth.RefreshTokenSecret));
 
   if (error) {
     const dataEncodeRefreshToken = pick(member, ['id', 'status', 'email', 'phoneNumber']);
-    dataEncodeRefreshToken['type'] = 'memberId';
+    dataEncodeRefreshToken['type'] = 'userId';
     const newRefreshToken = generateRefreshToken(dataEncodeRefreshToken);
     await userRepository.update(memberId, { refreshToken: newRefreshToken });
     return { token, refreshToken: newRefreshToken };
@@ -154,4 +154,20 @@ export async function changePassword(memberId: number, params: ChangePasswordPar
   const passwordHash = await hash(newPassword, config.auth.SaltRounds);
   await userRepo.update(memberId, { password: passwordHash });
   return;
+}
+
+export async function userGetProfile(userId: number) {
+  if (userId) {
+    const user = await getRepository(User).findOne(userId);
+    return {
+      id: userId,
+      username: user.username,
+      fullName: user.fullName,
+      birthday: user.birthday,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+      gender: user.gender,
+    };
+  }
+  return null;
 }

@@ -1,4 +1,4 @@
-import { APP, Post, Put, RequirePermission } from '$helpers/decorator';
+import { APP, Get, Post, Put, RequirePermission } from '$helpers/decorator';
 import { checkRefreshToken, checkToken, checkUserPermission } from '$middlewares/common';
 import { validate } from '$helpers/ajv';
 import { changePasswordSchema, loginSchema, registerSchema } from '$validators/app.auth';
@@ -37,5 +37,12 @@ export default class UserAuthController {
     const { body } = req;
     validate(registerSchema, body);
     return await service.register(body);
+  }
+
+  @Get('/profile')
+  @RequirePermission([ROLE.USER])
+  async userGetProfile(req: Request) {
+    const userId = req.userId;
+    return await service.userGetProfile(userId);
   }
 }

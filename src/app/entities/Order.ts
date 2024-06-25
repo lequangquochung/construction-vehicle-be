@@ -33,7 +33,7 @@ export default class Order {
   @Column({ name: 'phone_number', type: 'varchar', length: 255 })
   phoneNumber: string;
 
-  @Column({ name: 'total_price', type: 'numeric' })
+  @Column({ name: 'total_price', type: 'numeric', nullable: true })
   totalPrice: number | 0;
 
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)

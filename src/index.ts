@@ -31,7 +31,14 @@ connectToDatabase()
   .then(async (connection) => {
     app.use(bodyParser.json({ limit: '10mb' }));
     app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
-    app.use(cors());
+
+    // Enable public CORS
+    app.use(cors({
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    }));
+
     app.use(helmet());
     app.use(logRequest);
     app.use(express.static('public'));
@@ -40,13 +47,7 @@ connectToDatabase()
 
     app.use(handleError);
 
-    // Disable ONLY_FULL_GROUP_BY
-    // await getManager().query(
-    //   `SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));`
-    // );
-
     if (process.env.SERVER_TYPE === 'full') {
-      
     }
   
     const userRepository = connection.getRepository(User);
@@ -76,41 +77,41 @@ connectToDatabase()
   })
   .catch((error) => logger.error(error));
 
-  async function connectToDatabase() {
-    try {
-      const connectionOptions: ConnectionOptions = {
-        type: 'mysql',
-        host: process.env.DB_HOST,
-        port: Number(process.env.DB_PORT),
-        username: process.env.DB_USER,
-        password: process.env.DB_PASS,
-        database: process.env.DB_NAME,
-        supportBigNumbers: false,
-        synchronize: true, // Alway use migration.
-        logging: process.env.ENVIRONMENT === 'production' ? false : true,
-        charset: 'utf8mb4',
-        migrationsTableName: 'migration',
-        entities: ['dist/app/entities/**/*.js'],
-        migrations: ['dist/database/migrations/**/*.js'],
-        subscribers: ['dist/database/subscribers/**/*.js'],
-        timezone: 'Z',
-        cli: {
-          entitiesDir: 'src/app/entities',
-          migrationsDir: 'src/database/migrations',
-          subscribersDir: 'src/database/subscribers',
-        },
-        extra: {
-          connectionLimit: 50,
-       },
-        logger: process.env.ENVIRONMENT === 'production' ? new CustomLogger() : undefined,
-      };
-  
-      const connection = await createConnection(connectionOptions);
-  
-      console.log('Connected to the database');
-      return connection;
-    } catch (error) {
-      console.error('Error connecting to the database:', error);
-      throw error;
-    }
+async function connectToDatabase() {
+  try {
+    const connectionOptions: ConnectionOptions = {
+      type: 'mysql',
+      host: process.env.DB_HOST,
+      port: Number(process.env.DB_PORT),
+      username: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: process.env.DB_NAME,
+      supportBigNumbers: false,
+      synchronize: true, // Alway use migration.
+      logging: process.env.ENVIRONMENT === 'production' ? false : true,
+      charset: 'utf8mb4',
+      migrationsTableName: 'migration',
+      entities: ['dist/app/entities/**/*.js'],
+      migrations: ['dist/database/migrations/**/*.js'],
+      subscribers: ['dist/database/subscribers/**/*.js'],
+      timezone: 'Z',
+      cli: {
+        entitiesDir: 'src/app/entities',
+        migrationsDir: 'src/database/migrations',
+        subscribersDir: 'src/database/subscribers',
+      },
+      extra: {
+        connectionLimit: 50,
+     },
+      logger: process.env.ENVIRONMENT === 'production' ? new CustomLogger() : undefined,
+    };
+
+    const connection = await createConnection(connectionOptions);
+
+    console.log('Connected to the database');
+    return connection;
+  } catch (error) {
+    console.error('Error connecting to the database:', error);
+    throw error;
   }
+}

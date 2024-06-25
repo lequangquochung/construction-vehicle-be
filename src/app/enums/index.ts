@@ -28,6 +28,7 @@ export enum ErrorCode {
   Product_Not_Exist = 24,
   Order_Not_exist = 25,
   Order_Must_Be_Processing = 26,
+  Search_Order_Need_Email_Or_Phone_Number = 27,
 }
 
 export enum UserStatus {

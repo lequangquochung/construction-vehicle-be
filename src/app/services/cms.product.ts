@@ -2,7 +2,7 @@ import Category from '$entities/Category';
 import Product from '$entities/Product';
 import ProductGallery from '$entities/ProductGallery';
 import Translation from '$entities/Translation';
-import { CommonStatus, ErrorCode, LangKey, ProductStatus } from '$enums/index';
+import { ErrorCode, ProductStatus } from '$enums/index';
 import { ITranslation } from '$interfaces/common';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 
@@ -42,7 +42,10 @@ export async function createProduct(params: CreateProductDTO) {
     });
 
     const product = await productRepo.save({
-      ...params,
+      model: params.model,
+      amount: params.amount,
+      contact: params.contact,
+      price: params.price,
       category: category,
       name: nameTranslation,
       description: descriptionTranslation,
