@@ -1,11 +1,11 @@
 import { LangKey } from '$enums/index';
-import { APP, GetPublic } from '$helpers/decorator';
+import { APP, Get } from '$helpers/decorator';
 import * as service from '$services/app.product';
 import { Request } from 'express';
 
 @APP('/product')
 export default class UserProductController {
-  @GetPublic('/:langKey')
+  @Get('/:langKey', [])
   async userGetProducts(req: Request) {
     const { langKey } = req.params;
     const { keyword, categoryId } = req.query;
@@ -17,7 +17,7 @@ export default class UserProductController {
     });
   }
 
-  @GetPublic('/:id/:langKey')
+  @Get('/:id/:langKey', [])
   async userGetProductDetail(req: Request) {
     const { id, langKey } = req.params;
     const languageKey = langKey as LangKey;

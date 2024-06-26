@@ -2,7 +2,7 @@ import { CMS, Post } from '$helpers/decorator';
 import upload from '$middlewares/fileUpload';
 
 @CMS('/upload')
-export default class EmployeeController {
+export default class UploadController {
   @Post('/array', [upload.array('files')])
   async uploadFiles(req: any) {
     const files = req.files;

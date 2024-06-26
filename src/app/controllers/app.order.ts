@@ -1,13 +1,13 @@
 import { LangKey, ROLE } from '$enums/index';
 import { validate } from '$helpers/ajv';
-import { APP, Get, GetPublic, PostPublic, RequirePermission } from '$helpers/decorator';
+import { APP, Get, Post, RequirePermission } from '$helpers/decorator';
 import * as service from '$services/app.order';
 import { createOrderSchema } from '$validators/cms.order';
 import { Request } from 'express';
 
 @APP('/order')
 export default class UserOrderController {
-  @GetPublic('/:langKey')
+  @Get('/:langKey', [])
   async userSearchOrders(req: Request) {
     const { langKey } = req.params;
     const { phoneNumber, email } = req.query;
@@ -20,7 +20,7 @@ export default class UserOrderController {
     });
   }
 
-  @PostPublic('')
+  @Post('', [])
   async userCreateOrder(req: Request) {
     const body = req.body;
     validate(createOrderSchema, body);
