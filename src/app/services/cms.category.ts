@@ -102,7 +102,7 @@ export async function getCategories(params: ISearchCategory) {
   const query = getRepository(Category)
     .createQueryBuilder('r')
     .innerJoin(Translation, 'nt', 'nt.id = r.name.id')
-    .select(['r.id', 'nt.contentEng as nameEng', 'nt.contentVie as nameVie', 'r.image'])
+    .select(['r.id', 'nt.contentEng as nameEng', 'nt.contentVie as nameVie', 'r.image as image'])
     .orderBy('r.id', 'ASC')
     .where('1=1');
 
