@@ -97,3 +97,8 @@ export enum ProductStatus {
   AVAILABLE = 'AVAILABLE',
   UNAVAILABLE = 'UNAVAILABLE',
 }
+
+export enum ProductType {
+  VEHICLE = 'VEHICLE',
+  SPARE_PARTS = 'SPARE_PARTS',
+}

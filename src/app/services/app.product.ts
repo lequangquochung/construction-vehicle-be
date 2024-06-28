@@ -8,6 +8,7 @@ import { getRepository } from 'typeorm';
 interface ISearchProduct {
   keyword?: string;
   categoryId: number;
+  type?: string;
   langKey: LangKey;
 }
 
@@ -28,6 +29,7 @@ export async function userGetProducts(params: ISearchProduct) {
       'cnt.contentEng as categoryName',
       'p.model as model',
       'p.image as image',
+      'p.type as type',
     ]);
   } else {
     query.select([
@@ -38,6 +40,7 @@ export async function userGetProducts(params: ISearchProduct) {
       'cnt.contentVie as categoryName',
       'p.model as model',
       'p.image as image',
+      'p.type as type',
     ]);
   }
   query.where('1=1');
@@ -54,6 +57,13 @@ export async function userGetProducts(params: ISearchProduct) {
       categoryId: params.categoryId,
     });
   }
+
+  if (params.type) {
+    query.andWhere('p.type = :type', {
+      type: params.type,
+    });
+  }
+
   query.orderBy('p.id', 'ASC');
   const [data, total] = await Promise.all([query.getRawMany(), query.getCount()]);
   return {
@@ -67,6 +77,7 @@ export async function userGetProducts(params: ISearchProduct) {
       },
       model: p.model,
       image: p.image,
+      type: p.type,
     })),
     total,
   };
@@ -102,6 +113,7 @@ export async function userGetPrductById(id: number, langKey: LangKey) {
     amount: product.amount,
     price: product.price,
     image: product.image,
+    type: product.type,
     gallery: gallery.map((e) => e.image),
   };
 }

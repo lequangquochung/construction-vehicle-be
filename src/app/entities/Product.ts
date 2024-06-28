@@ -44,6 +44,9 @@ export default class Product {
   @Column({ name: 'image', type: 'varchar', length: 255 })
   image: string;
 
+  @Column({ name: 'type', type: 'varchar', length: 255, nullable: true })
+  type: string;
+
   @CreateDateColumn({ name: 'created_date', type: 'datetime', nullable: true })
   createdDate: Date;
 

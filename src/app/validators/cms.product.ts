@@ -46,6 +46,10 @@ export const createProductSchema: AjvSchema = {
       type: 'string',
       maxLength: 255,
     },
+    type: {
+      type: ['null', 'string'],
+      maxLength: 255,
+    },
     amount: {
       type: ['null', 'number'],
     },
@@ -116,6 +120,10 @@ export const updateProductSchema: AjvSchema = {
       type: 'string',
       maxLength: 255,
     },
+    type: {
+      type: ['null', 'string'],
+      maxLength: 255,
+    },
     amount: {
       type: ['null', 'number'],
     },
@@ -128,4 +136,3 @@ export const updateProductSchema: AjvSchema = {
     },
   },
 };
-

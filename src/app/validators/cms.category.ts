@@ -1,6 +1,6 @@
 export const createCategorySchema: AjvSchema = {
   type: 'object',
-  required: ['name', 'image'],
+  required: ['name'],
   additionalProperties: false,
   properties: {
     name: {
@@ -20,7 +20,7 @@ export const createCategorySchema: AjvSchema = {
     },
     image: {
       type: 'string',
-      minLength: 1,
+      minLength: 0,
       maxLength: 255,
     },
   },
@@ -28,7 +28,7 @@ export const createCategorySchema: AjvSchema = {
 
 export const updateCategorySchema: AjvSchema = {
   type: 'object',
-  required: ['id', 'name', 'image'],
+  required: ['id', 'name'],
   additionalProperties: false,
   properties: {
     name: {
@@ -48,7 +48,7 @@ export const updateCategorySchema: AjvSchema = {
     },
     image: {
       type: 'string',
-      minLength: 1,
+      minLength: 0,
       maxLength: 255,
     },
     id: {

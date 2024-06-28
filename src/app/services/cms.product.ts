@@ -2,7 +2,7 @@ import Category from '$entities/Category';
 import Product from '$entities/Product';
 import ProductGallery from '$entities/ProductGallery';
 import Translation from '$entities/Translation';
-import { ErrorCode, ProductStatus } from '$enums/index';
+import { ErrorCode, ProductStatus, ProductType } from '$enums/index';
 import { ITranslation } from '$interfaces/common';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 
@@ -15,6 +15,7 @@ interface CreateProductDTO {
   amount?: number | 0;
   price?: number;
   gallery: string[];
+  type: ProductType;
 }
 
 export async function createProduct(params: CreateProductDTO) {
@@ -51,6 +52,7 @@ export async function createProduct(params: CreateProductDTO) {
       description: descriptionTranslation,
       status: ProductStatus.AVAILABLE,
       image: params.gallery[0],
+      type: params.type ? params.type : ProductType.VEHICLE,
     });
 
     const gallery = params.gallery.map((e) => ({
@@ -95,6 +97,7 @@ export async function getProductById(id: number) {
     amount: product.amount,
     price: product.price,
     status: product.status,
+    type: product.type,
     gallery: gallery.map((e) => e.image),
   };
 }
@@ -110,6 +113,7 @@ interface UpdateProductDTO {
   price?: number;
   gallery: string[];
   status: ProductStatus;
+  type: ProductType;
 }
 
 export async function updateProduct(params: UpdateProductDTO) {
@@ -153,6 +157,15 @@ export async function updateProduct(params: UpdateProductDTO) {
       image: e,
     }));
     await productGalleryRepo.save(newProductGallery);
+    await productRepo.update(params.id, {
+      category: product.category,
+      model: params.model,
+      contact: params.contact,
+      amount: params.amount,
+      price: params.price,
+      status: params.status,
+      type: params.type ? params.type : product.type,
+    });
     return {
       id: product.id,
       name: {
@@ -170,12 +183,13 @@ export async function updateProduct(params: UpdateProductDTO) {
         contentEng: product.description.contentEng,
         contentVie: product.description.contentVie,
       },
-      model: product.model,
-      contact: product.contact,
-      amount: product.amount,
-      product: product.price,
-      status: product.status,
+      model: params.model,
+      contact: params.contact,
+      amount: params.amount,
+      product: params.price,
+      status: params.status,
       gallery: newProductGallery.map((e) => e.image),
+      type: params.type ? params.type : product.type,
     };
   });
 }
@@ -206,6 +220,7 @@ export async function deleteProductById(id: number) {
 
 interface ISearchProduct {
   keyword?: string;
+  type?: string;
 }
 
 export async function getListProduct(params: ISearchProduct) {
@@ -224,14 +239,21 @@ export async function getListProduct(params: ISearchProduct) {
       'p.contact as contact',
       'p.amount as amount',
       'p.price as price',
+      'p.type as type',
     ])
     .orderBy('p.id', 'ASC')
     .where('1=1');
 
   if (params.keyword) {
-    query.andWhere('p.id = :id OR nt.contentEng LIKE :keyword OR nt.contentVie LIKE :keyword', {
+    query.andWhere('p.id = :id OR nt.contentEng LIKE :keyword OR nt.contentVie LIKE :keyword ', {
       id: params.keyword,
       keyword: '%' + params.keyword + '%',
+    });
+  }
+
+  if (params.type) {
+    query.andWhere('p.type = :type ', {
+      type: params.type,
     });
   }
 
@@ -253,6 +275,7 @@ export async function getListProduct(params: ISearchProduct) {
       contact: p.contact,
       price: p.price,
       amount: p.amount,
+      type: p.type,
     })),
     total,
   };
