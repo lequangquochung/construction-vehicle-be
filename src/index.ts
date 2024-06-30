@@ -62,8 +62,9 @@ connectToDatabase()
       admin.email = "cogioiducanh@gmail.com";
       admin.role = ROLE.ADMIN;
       admin.phoneNumber = "0927633733";
+      admin.username = "cogioiducanh";
       admin.gender = "MALE";
-      admin.fullName = "anphuc";
+      admin.fullName = "ducanh";
       admin.password = password;
       admin.status = AccountStatus.ACTIVE;
       await userRepository.save(admin);

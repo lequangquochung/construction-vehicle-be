@@ -17,6 +17,9 @@ export const createOrderSchema: AjvSchema = {
       minLength: 1,
       maxLength: 255,
     },
+    note: {
+      type: ['null', 'string'],
+    },
     details: {
       type: 'array',
       minItems: 1,
@@ -64,6 +67,9 @@ export const updateOrderSchema: AjvSchema = {
       type: 'string',
       minLength: 1,
       maxLength: 255,
+    },
+    note: {
+      type: ['null', 'string'],
     },
     details: {
       type: 'array',

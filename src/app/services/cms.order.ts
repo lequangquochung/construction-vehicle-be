@@ -10,6 +10,7 @@ interface CreateOrderDTO {
   userId?: number;
   email: string;
   phoneNumber: string;
+  note?: string;
   details: OrderDetailDto[];
 }
 
@@ -49,6 +50,7 @@ export async function createOrder(params: CreateOrderDTO) {
       email: params.email,
       phoneNumber: params.phoneNumber,
       totalPrice: totalPrice,
+      note: params.note,
     });
 
     const orderDetails: OrderDetail[] = [];
@@ -114,10 +116,10 @@ export async function getOrderById(orderId: number) {
   const orderRepo = getRepository(Order);
   const order = await orderRepo.findOne(orderId, {
     relations: [
-      'order.orderDetails',
-      'order.orderDetails.product',
-      'order.orderDetails.product.name',
-      'order.user',
+      'orderDetails',
+      'orderDetails.product',
+      'orderDetails.product.name',
+      'user',
     ],
   });
 
@@ -129,7 +131,8 @@ export async function getOrderById(orderId: number) {
       name: {
         contentEng: od.product.name.contentEng,
         contentVie: od.product.name.contentVie,
-      },
+      },      
+      type: od.product.type,
     },
   }));
 
@@ -149,6 +152,7 @@ export async function getOrderById(orderId: number) {
     status: order.status,
     createdDate: order.createdDate,
     orderDetails: orderDetails,
+    note: order.note,
   };
 }
 
@@ -173,6 +177,7 @@ export async function getOrders(params: ISearchOrder) {
       'o.status as status',
       'o.totalPrice as totalPrice',
       'o.createdDate as createdDate',
+      'o.note as note',
     ])
     .orderBy('o.id', 'ASC')
     .where('1=1');
@@ -213,6 +218,7 @@ export async function getOrders(params: ISearchOrder) {
       phoneNumber: o.phoneNumber,
       status: o.status,
       totalPrice: o.totalPrice,
+      note: o.note,
       createdDate: moment(o.createdDate).format('YYYY-MM-DD HH:mm:ss'),
     })),
     total,
@@ -225,6 +231,7 @@ interface UpdateOrderDTO {
   email: string;
   phoneNumber: string;
   status: string;
+  note?: string;
   details: OrderDetailDto[];
 }
 
@@ -282,6 +289,7 @@ export async function updateOrder(params: UpdateOrderDTO) {
       email: params.email,
       phoneNumber: params.phoneNumber,
       totalPrice: totalPrice,
+      note: params.note,
     });
   });
 }

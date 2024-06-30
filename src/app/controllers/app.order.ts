@@ -29,7 +29,7 @@ export default class UserOrderController {
 
   @Get('/my-order/:langKey')
   @RequirePermission([ROLE.USER])
-  async userGetMyOrder(req: Request) {
+  async userGetMyOrders(req: Request) {
     const userId = req.userId;
     const { langKey } = req.params;
     const { phoneNumber, email } = req.query;
@@ -41,5 +41,14 @@ export default class UserOrderController {
       langKey: languageKey,
       userId: Number(userId),
     });
+  }
+
+  @Get('/my-order/:id/:langKey')
+  @RequirePermission([ROLE.USER])
+  async userGetMyOrderDetail(req: Request) {
+    const userId = req.userId;
+    const { langKey, id } = req.params;
+    const languageKey = langKey as LangKey;
+    return await service.userGetOwnOrderDetail(Number(id), Number(userId), languageKey);
   }
 }

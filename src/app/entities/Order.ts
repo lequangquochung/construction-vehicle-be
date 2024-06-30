@@ -36,6 +36,9 @@ export default class Order {
   @Column({ name: 'total_price', type: 'numeric', nullable: true })
   totalPrice: number | 0;
 
+  @Column({ name: 'note', type: 'text', nullable: true })
+  note: string;
+
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
   orderDetails: OrderDetail[];
 

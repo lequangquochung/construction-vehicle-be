@@ -172,3 +172,43 @@ export async function userCreateOrder(params: CreateOrderDTO) {
     }
   });
 }
+
+export async function userGetOwnOrderDetail(id: number, userId: number, langKey: LangKey) {
+  const orderRepo = getRepository(Order);
+  const order = await orderRepo.findOne(id, {
+    relations: ['orderDetails', 'orderDetails.product', 'orderDetails.product.name', 'user'],
+  });
+
+  const orderDetails = order.orderDetails.map((od) => ({
+    product: {
+      image: od.product.image,
+      price: od.price,
+      amount: od.amount,
+      name: langKey === LangKey.ENG ? od.product.name.contentEng : od.product.name.contentVie,
+      type: od.product.type,
+    },
+  }));
+
+  if (!order) {
+    throw ErrorCode.Order_Not_exist;
+  }
+
+  if (order.user.id !== userId) {
+    throw ErrorCode.Order_Not_Your_Own;
+  }
+
+  return {
+    id: order.id,
+    user: {
+      id: order.user?.id,
+      username: order.user?.username,
+      fullName: order.user?.fullName,
+    },
+    email: order.email,
+    phoneNumber: order.phoneNumber,
+    status: order.status,
+    createdDate: order.createdDate,
+    orderDetails: orderDetails,
+    note: order.note,
+  };
+}
