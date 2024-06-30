@@ -3,6 +3,8 @@ import OrderDetail from '$entities/OrderDetail';
 import Product from '$entities/Product';
 import User from '$entities/User';
 import { ErrorCode, OrderStatus } from '$enums/index';
+import { assignPaging, returnPaging } from '$helpers/utils';
+import { NewPagingParams } from '$interfaces/common';
 import moment from 'moment';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 
@@ -115,12 +117,7 @@ export async function cancelOrder(orderId: number) {
 export async function getOrderById(orderId: number) {
   const orderRepo = getRepository(Order);
   const order = await orderRepo.findOne(orderId, {
-    relations: [
-      'orderDetails',
-      'orderDetails.product',
-      'orderDetails.product.name',
-      'user',
-    ],
+    relations: ['orderDetails', 'orderDetails.product', 'orderDetails.product.name', 'user'],
   });
 
   const orderDetails = order.orderDetails.map((od) => ({
@@ -131,7 +128,7 @@ export async function getOrderById(orderId: number) {
       name: {
         contentEng: od.product.name.contentEng,
         contentVie: od.product.name.contentVie,
-      },      
+      },
       type: od.product.type,
     },
   }));
@@ -156,7 +153,7 @@ export async function getOrderById(orderId: number) {
   };
 }
 
-interface ISearchOrder {
+interface ISearchOrder extends NewPagingParams {
   keyword?: string;
   status?: string;
   startDate?: Date;
@@ -164,6 +161,7 @@ interface ISearchOrder {
 }
 
 export async function getOrders(params: ISearchOrder) {
+  assignPaging(params);
   const query = getRepository(Order)
     .createQueryBuilder('o')
     .leftJoinAndMapOne('o.user', User, 'u', 'u.id = o.user.id')
@@ -203,26 +201,31 @@ export async function getOrders(params: ISearchOrder) {
       endDate: params.endDate,
     });
   }
+  query.offset(params.skip).limit(params.pageSize);
 
   const total = await query.getCount();
   const data = await query.getRawMany();
-  return {
-    data: data.map((o) => ({
-      id: o.id,
-      user: {
-        id: o.userId,
-        username: o.username,
-        fullName: o.fullName,
-      },
-      email: o.email,
-      phoneNumber: o.phoneNumber,
-      status: o.status,
-      totalPrice: o.totalPrice,
-      note: o.note,
-      createdDate: moment(o.createdDate).format('YYYY-MM-DD HH:mm:ss'),
-    })),
+
+  return returnPaging(
+    {
+      data: data.map((o) => ({
+        id: o.id,
+        user: {
+          id: o.userId,
+          username: o.username,
+          fullName: o.fullName,
+        },
+        email: o.email,
+        phoneNumber: o.phoneNumber,
+        status: o.status,
+        totalPrice: o.totalPrice,
+        note: o.note,
+        createdDate: moment(o.createdDate).format('YYYY-MM-DD HH:mm:ss'),
+      })),
+    },
     total,
-  };
+    params
+  );
 }
 
 interface UpdateOrderDTO {

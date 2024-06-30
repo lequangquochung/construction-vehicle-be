@@ -4,7 +4,7 @@ import moment from 'moment';
 
 interface PagingParams {
   pageIndex: number;
-  take: number;
+  pageSize: number;
   start: number;
   [key: string]: any;
 }
@@ -15,15 +15,15 @@ export function returnPaging(data: any, totalItems: number, params: any, metadat
     totalItems,
     paging: true,
     pageIndex: params.pageIndex,
-    totalPages: Math.ceil(totalItems / params.take),
+    totalPages: Math.ceil(totalItems / params.pageSize),
     metadata,
   };
 }
 
 export function assignPaging(params) {
   params.pageIndex = Number(params.pageIndex) || 1;
-  params.take = Number(params.take) || 10;
-  params.skip = (params.pageIndex - 1) * params.take;
+  params.pageSize = Number(params.pageSize) || 10;
+  params.skip = (params.pageIndex - 1) * params.pageSize;
   return params;
 }
 

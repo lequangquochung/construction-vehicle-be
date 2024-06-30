@@ -1,7 +1,13 @@
 export interface PagingParams {
   pageIndex?: number;
-  take?: number;
+  pageSize?: number;
   start?: number;
+  skip?: number;
+}
+
+export interface NewPagingParams {
+  pageIndex?: number;
+  pageSize?: number;
   skip?: number;
 }
 

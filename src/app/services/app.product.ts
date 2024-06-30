@@ -3,9 +3,11 @@ import Product from '$entities/Product';
 import ProductGallery from '$entities/ProductGallery';
 import Translation from '$entities/Translation';
 import { ErrorCode, LangKey } from '$enums/index';
+import { assignPaging, returnPaging } from '$helpers/utils';
+import { NewPagingParams } from '$interfaces/common';
 import { getRepository } from 'typeorm';
 
-interface ISearchProduct {
+interface ISearchProduct extends NewPagingParams {
   keyword?: string;
   categoryId: number;
   type?: string;
@@ -13,6 +15,7 @@ interface ISearchProduct {
 }
 
 export async function userGetProducts(params: ISearchProduct) {
+  assignPaging(params);
   const query = getRepository(Product)
     .createQueryBuilder('p')
     .innerJoin(Translation, 'nt', 'nt.id = p.name.id')
@@ -64,23 +67,28 @@ export async function userGetProducts(params: ISearchProduct) {
     });
   }
 
+  query.offset(params.skip).limit(params.pageSize);
   query.orderBy('p.id', 'ASC');
+
   const [data, total] = await Promise.all([query.getRawMany(), query.getCount()]);
-  return {
-    data: data.map((p) => ({
-      id: p.id,
-      name: p.name,
-      description: p.description,
-      category: {
-        id: p.categoryId,
-        name: p.categoryName,
-      },
-      model: p.model,
-      image: p.image,
-      type: p.type,
-    })),
+  return returnPaging(
+    {
+      data: data.map((p) => ({
+        id: p.id,
+        name: p.name,
+        description: p.description,
+        category: {
+          id: p.categoryId,
+          name: p.categoryName,
+        },
+        model: p.model,
+        image: p.image,
+        type: p.type,
+      })),
+    },
     total,
-  };
+    params
+  );
 }
 
 export async function userGetPrductById(id: number, langKey: LangKey) {

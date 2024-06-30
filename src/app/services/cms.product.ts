@@ -3,7 +3,8 @@ import Product from '$entities/Product';
 import ProductGallery from '$entities/ProductGallery';
 import Translation from '$entities/Translation';
 import { ErrorCode, ProductStatus, ProductType } from '$enums/index';
-import { ITranslation } from '$interfaces/common';
+import { assignPaging, returnPaging } from '$helpers/utils';
+import { ITranslation, NewPagingParams } from '$interfaces/common';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 
 interface CreateProductDTO {
@@ -218,12 +219,13 @@ export async function deleteProductById(id: number) {
   });
 }
 
-interface ISearchProduct {
+interface ISearchProduct extends NewPagingParams {
   keyword?: string;
   type?: string;
 }
 
 export async function getListProduct(params: ISearchProduct) {
+  assignPaging(params);
   const query = getRepository(Product)
     .createQueryBuilder('p')
     .innerJoin(Translation, 'nt', 'nt.id = p.name.id')
@@ -256,27 +258,31 @@ export async function getListProduct(params: ISearchProduct) {
       type: params.type,
     });
   }
+  query.offset(params.skip).limit(params.pageSize);
 
   const total = await query.getCount();
   const data = await query.getRawMany();
-  return {
-    data: data.map((p) => ({
-      id: p.id,
-      name: {
-        contentEng: p.nameEng,
-        contentVie: p.nameVie,
-      },
-      image: p.image,
-      description: {
-        contentEng: p.descriptionEng,
-        contentVie: p.descriptionVie,
-      },
-      model: p.model,
-      contact: p.contact,
-      price: p.price,
-      amount: p.amount,
-      type: p.type,
-    })),
+  return returnPaging(
+    {
+      data: data.map((p) => ({
+        id: p.id,
+        name: {
+          contentEng: p.nameEng,
+          contentVie: p.nameVie,
+        },
+        image: p.image,
+        description: {
+          contentEng: p.descriptionEng,
+          contentVie: p.descriptionVie,
+        },
+        model: p.model,
+        contact: p.contact,
+        price: p.price,
+        amount: p.amount,
+        type: p.type,
+      })),
+    },
     total,
-  };
+    params
+  );
 }

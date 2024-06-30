@@ -61,7 +61,7 @@ export async function getLog(params: GetLog) {
 
   const [data, total] = await builder
     .offset(params.skip)
-    .limit(params.take)
+    .limit(params.pageSize)
     .orderBy('l.createdDate', 'DESC')
     .getManyAndCount();
 
