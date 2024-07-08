@@ -9,7 +9,7 @@ import { getRepository } from 'typeorm';
 
 interface ISearchProduct extends NewPagingParams {
   keyword?: string;
-  categoryId: number;
+  categoryId?: number;
   type?: string;
   langKey: LangKey;
 }

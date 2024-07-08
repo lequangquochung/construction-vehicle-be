@@ -27,12 +27,12 @@ export const createProductSchema: AjvSchema = {
       properties: {
         contentEng: {
           type: 'string',
-          minLength: 1,
+          minLength: 0,
           maxLength: 255,
         },
         contentVie: {
           type: 'string',
-          minLength: 1,
+          minLength: 0,
           maxLength: 255,
         },
       },
