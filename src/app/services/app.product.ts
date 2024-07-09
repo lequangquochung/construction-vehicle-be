@@ -33,6 +33,7 @@ export async function userGetProducts(params: ISearchProduct) {
       'p.model as model',
       'p.image as image',
       'p.type as type',
+      'p.price as price',
     ]);
   } else {
     query.select([
@@ -44,6 +45,7 @@ export async function userGetProducts(params: ISearchProduct) {
       'p.model as model',
       'p.image as image',
       'p.type as type',
+      'p.price as price',
     ]);
   }
   query.where('1=1');
@@ -84,6 +86,7 @@ export async function userGetProducts(params: ISearchProduct) {
         model: p.model,
         image: p.image,
         type: p.type,
+        price: p.price,
       })),
     },
     total,
