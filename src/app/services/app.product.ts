@@ -125,6 +125,7 @@ export async function userGetPrductById(id: number, langKey: LangKey) {
     price: product.price,
     image: product.image,
     type: product.type,
+    contact: product.contact,
     gallery: gallery.map((e) => e.image),
   };
 }
