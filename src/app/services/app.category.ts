@@ -7,13 +7,15 @@ import { getRepository } from 'typeorm';
 interface ISearchCategory {
   keyword?: string;
   langKey: LangKey;
+  type?: string;
 }
 
 export async function userGetCategories(params: ISearchCategory) {
   const query = getRepository(Category)
     .createQueryBuilder('r')
-    .innerJoin(Translation, 'nt', 'nt.id = r.name.id')
-    .leftJoinAndSelect(
+    .innerJoin(Translation, 'nt', 'nt.id = r.name.id');
+  if (!params.type) {
+    query.leftJoinAndSelect(
       (subQuery) =>
         subQuery
           .select('p.category.id', 'categoryId')
@@ -23,6 +25,21 @@ export async function userGetCategories(params: ISearchCategory) {
       'pc',
       'pc.categoryId = r.id'
     );
+  } else {
+    query.leftJoinAndSelect(
+      (subQuery) =>
+        subQuery
+          .select('p.category.id', 'categoryId')
+          .addSelect('COUNT(p.id)', 'productCount')
+          .from(Product, 'p')
+          .where('p.type = :type', {
+            type: params.type,
+          })
+          .groupBy('p.category.id'),
+      'pc',
+      'pc.categoryId = r.id'
+    );
+  }
 
   if (params.langKey === LangKey.ENG) {
     query.select([
@@ -45,6 +62,10 @@ export async function userGetCategories(params: ISearchCategory) {
       id: params.keyword,
       keyword: '%' + params.keyword + '%',
     });
+  }
+
+  if (params.type) {
+    query.andWhere('productCount > 0');
   }
 
   query.orderBy('r.id', 'ASC');

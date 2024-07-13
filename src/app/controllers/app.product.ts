@@ -14,7 +14,7 @@ export default class UserProductController {
       keyword: keyword ? keyword + '' : null,
       categoryId: Number(categoryId),
       langKey: languageKey,
-      type: type + '',
+      type: type ? type + '' : null,
     });
   }
 
