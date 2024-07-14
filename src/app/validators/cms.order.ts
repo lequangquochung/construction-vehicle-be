@@ -1,6 +1,6 @@
 export const createOrderSchema: AjvSchema = {
   type: 'object',
-  required: ['email', 'phoneNumber', 'details'],
+  required: ['phoneNumber', 'name', 'details', 'note'],
   additionalProperties: false,
   properties: {
     userId: {
@@ -8,8 +8,8 @@ export const createOrderSchema: AjvSchema = {
       minimum: 1,
     },
     email: {
-      type: 'string',
-      minLength: 1,
+      type: ['null', 'string'],
+      minLength: 0,
       maxLength: 255,
     },
     phoneNumber: {
@@ -17,8 +17,15 @@ export const createOrderSchema: AjvSchema = {
       minLength: 1,
       maxLength: 255,
     },
+    name: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 255,
+    },
     note: {
-      type: ['null', 'string'],
+      type: 'string',
+      minLength: 1,
+      maxLength: 255,
     },
     details: {
       type: 'array',
@@ -43,7 +50,7 @@ export const createOrderSchema: AjvSchema = {
 
 export const updateOrderSchema: AjvSchema = {
   type: 'object',
-  required: ['id', 'status', 'email', 'phoneNumber', 'details'],
+  required: ['id', 'status', 'phoneNumber', 'name', 'details'],
   additionalProperties: false,
   properties: {
     id: {
@@ -59,8 +66,8 @@ export const updateOrderSchema: AjvSchema = {
       minimum: 1,
     },
     email: {
-      type: 'string',
-      minLength: 1,
+      type: ['null', 'string'],
+      minLength: 0,
       maxLength: 255,
     },
     phoneNumber: {
@@ -68,8 +75,15 @@ export const updateOrderSchema: AjvSchema = {
       minLength: 1,
       maxLength: 255,
     },
+    name: {
+      type: 'string',
+      minLength: 1,
+      maxLength: 255,
+    },
     note: {
-      type: ['null', 'string'],
+      type: 'string',
+      minLength: 1,
+      maxLength: 255,
     },
     details: {
       type: 'array',

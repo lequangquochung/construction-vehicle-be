@@ -27,16 +27,19 @@ export default class Order {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ name: 'email', type: 'varchar', length: 255 })
+  @Column({ name: 'email', type: 'varchar', length: 255, nullable: true })
   email: string;
 
   @Column({ name: 'phone_number', type: 'varchar', length: 255 })
   phoneNumber: string;
 
+  @Column({ name: 'name', type: 'varchar', length: 255 })
+  name: string;
+
   @Column({ name: 'total_price', type: 'numeric', nullable: true })
   totalPrice: number | 0;
 
-  @Column({ name: 'note', type: 'text', nullable: true })
+  @Column({ name: 'note', type: 'text' })
   note: string;
 
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)

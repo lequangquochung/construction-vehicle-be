@@ -33,13 +33,14 @@ export async function userGetOrders(params: IUserSearchOrder) {
       'o.status as status',
       'o.totalPrice as totalPrice',
       'o.createdDate as createdDate',
+      'o.name as name',
       'u.id as userId',
       'u.username as username',
       'u.fullName as fullName',
       'od.product.id as productId',
       'od.amount as amount',
       'od.price as price',
-      'pnt.contentEng as name',
+      'pnt.contentEng as productName',
     ])
     .where('1=1');
 
@@ -86,6 +87,7 @@ export async function userGetOrders(params: IUserSearchOrder) {
         status: o.status,
         totalPrice: o.totalPrice,
         createdDate: moment(o.createdDate).format('YYYY-MM-DD HH:mm:ss'),
+        name: o.name,
         user: {
           id: o.userId,
           username: o.username,
@@ -99,7 +101,7 @@ export async function userGetOrders(params: IUserSearchOrder) {
       productId: o.productId,
       amount: o.amount,
       price: o.price,
-      name: o.name,
+      name: o.productName,
     });
   });
 
@@ -115,7 +117,9 @@ interface CreateOrderDTO {
   userId?: number;
   email: string;
   phoneNumber: string;
+  name: string;
   details: OrderDetailDto[];
+  note: string;
 }
 
 interface OrderDetailDto {
@@ -154,6 +158,8 @@ export async function userCreateOrder(params: CreateOrderDTO) {
       email: params.email,
       phoneNumber: params.phoneNumber,
       totalPrice: totalPrice,
+      name: params.name,
+      note: params.note,
     });
 
     const orderDetails: OrderDetail[] = [];
@@ -210,5 +216,6 @@ export async function userGetOwnOrderDetail(id: number, userId: number, langKey:
     createdDate: order.createdDate,
     orderDetails: orderDetails,
     note: order.note,
+    name: order.name,
   };
 }

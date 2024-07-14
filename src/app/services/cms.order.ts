@@ -12,6 +12,7 @@ interface CreateOrderDTO {
   userId?: number;
   email: string;
   phoneNumber: string;
+  name: string;
   note?: string;
   details: OrderDetailDto[];
 }
@@ -49,6 +50,7 @@ export async function createOrder(params: CreateOrderDTO) {
     const order = await orderRepo.save({
       status: OrderStatus.NEW,
       user: user,
+      name: params.name,
       email: params.email,
       phoneNumber: params.phoneNumber,
       totalPrice: totalPrice,
@@ -144,6 +146,7 @@ export async function getOrderById(orderId: number) {
       username: order.user?.username,
       fullName: order.user?.fullName,
     },
+    name: order.name,
     email: order.email,
     phoneNumber: order.phoneNumber,
     status: order.status,
@@ -181,10 +184,14 @@ export async function getOrders(params: ISearchOrder) {
     .where('1=1');
 
   if (params.keyword) {
-    query.andWhere('o.id = :id OR o.email = :keyword OR o.phoneNumber = :keyword', {
-      id: params.keyword,
-      keyword: params.keyword,
-    });
+    query.andWhere(
+      'o.id = :id OR o.email = :keyword OR o.phoneNumber = :keyword OR o.name LIKE :name',
+      {
+        id: params.keyword,
+        keyword: params.keyword,
+        name: '%' + params.keyword + '%',
+      }
+    );
   }
   if (params.status) {
     query.andWhere('o.status = :status', {
@@ -233,6 +240,7 @@ interface UpdateOrderDTO {
   userId?: number;
   email: string;
   phoneNumber: string;
+  name: string;
   status: string;
   note?: string;
   details: OrderDetailDto[];
@@ -286,13 +294,14 @@ export async function updateOrder(params: UpdateOrderDTO) {
       }
     });
 
-    await orderRepo.save({
+    await orderRepo.update(params.id, {
       status: params.status,
       user: user,
       email: params.email,
       phoneNumber: params.phoneNumber,
       totalPrice: totalPrice,
       note: params.note,
+      name: params.name,
     });
   });
 }
