@@ -3,7 +3,7 @@ import Product from '$entities/Product';
 import ProductGallery from '$entities/ProductGallery';
 import Translation from '$entities/Translation';
 import { ErrorCode, ProductStatus, ProductType } from '$enums/index';
-import { assignPaging, returnPaging } from '$helpers/utils';
+import { assignPaging, convertDataConfig, returnPaging } from '$helpers/utils';
 import { ITranslation, NewPagingParams } from '$interfaces/common';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
 
@@ -17,6 +17,7 @@ interface CreateProductDTO {
   price?: number;
   gallery: string[];
   type: ProductType;
+  discount: number;
 }
 
 export async function createProduct(params: CreateProductDTO) {
@@ -54,6 +55,8 @@ export async function createProduct(params: CreateProductDTO) {
       status: ProductStatus.AVAILABLE,
       image: params.gallery[0],
       type: params.type ? params.type : ProductType.VEHICLE,
+      isDiscount: params.discount == null || params.discount == 0 ? false : true,
+      discount: params.discount,
     });
 
     const gallery = params.gallery.map((e) => ({
@@ -100,6 +103,8 @@ export async function getProductById(id: number) {
     status: product.status,
     type: product.type,
     gallery: gallery.map((e) => e.image),
+    isDiscount: product.isDiscount,
+    discount: product.discount,
   };
 }
 
@@ -115,6 +120,7 @@ interface UpdateProductDTO {
   gallery: string[];
   status: ProductStatus;
   type: ProductType;
+  discount?: number;
 }
 
 export async function updateProduct(params: UpdateProductDTO) {
@@ -166,6 +172,8 @@ export async function updateProduct(params: UpdateProductDTO) {
       price: params.price,
       status: params.status,
       type: params.type ? params.type : product.type,
+      isDiscount: params.discount == null || params.discount == 0 ? false : true,
+      discount: params.discount,
     });
     return {
       id: product.id,
@@ -191,6 +199,8 @@ export async function updateProduct(params: UpdateProductDTO) {
       status: params.status,
       gallery: newProductGallery.map((e) => e.image),
       type: params.type ? params.type : product.type,
+      isDiscount: params.discount == null || params.discount == 0 ? false : true,
+      discount: params.discount,
     };
   });
 }
@@ -222,6 +232,7 @@ export async function deleteProductById(id: number) {
 interface ISearchProduct extends NewPagingParams {
   keyword?: string;
   type?: string;
+  isDiscount?: boolean;
 }
 
 export async function getListProduct(params: ISearchProduct) {
@@ -242,6 +253,8 @@ export async function getListProduct(params: ISearchProduct) {
       'p.amount as amount',
       'p.price as price',
       'p.type as type',
+      'p.isDiscount as isDiscount',
+      'p.discount as discount',
     ])
     .orderBy('p.id', 'ASC')
     .where('1=1');
@@ -256,6 +269,11 @@ export async function getListProduct(params: ISearchProduct) {
   if (params.type) {
     query.andWhere('p.type = :type ', {
       type: params.type,
+    });
+  }
+  if (params.isDiscount != null) {
+    query.andWhere('p.isDiscount = :isDiscount', {
+      isDiscount: convertDataConfig('BOOLEAN', params.isDiscount),
     });
   }
   query.offset(params.skip).limit(params.pageSize);
@@ -280,6 +298,8 @@ export async function getListProduct(params: ISearchProduct) {
         price: p.price,
         amount: p.amount,
         type: p.type,
+        isDiscount: p.isDiscount,
+        discount: p.discount,
       })),
     },
     total,

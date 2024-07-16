@@ -12,6 +12,7 @@ interface ISearchProduct extends NewPagingParams {
   categoryId?: number;
   type?: string;
   langKey: LangKey;
+  isDiscount?: boolean;
 }
 
 export async function userGetProducts(params: ISearchProduct) {
@@ -34,6 +35,8 @@ export async function userGetProducts(params: ISearchProduct) {
       'p.image as image',
       'p.type as type',
       'p.price as price',
+      'p.isDiscount as isDiscount',
+      'p.discount as discount',
     ]);
   } else {
     query.select([
@@ -46,6 +49,8 @@ export async function userGetProducts(params: ISearchProduct) {
       'p.image as image',
       'p.type as type',
       'p.price as price',
+      'p.isDiscount as isDiscount',
+      'p.discount as discount',
     ]);
   }
   query.where('1=1');
@@ -69,6 +74,12 @@ export async function userGetProducts(params: ISearchProduct) {
     });
   }
 
+  if (params.isDiscount != null) {
+    query.andWhere('p.isDiscount = :isDiscount', {
+      isDiscount: params.isDiscount,
+    });
+  }
+
   query.offset(params.skip).limit(params.pageSize);
   query.orderBy('p.id', 'ASC');
 
@@ -87,6 +98,8 @@ export async function userGetProducts(params: ISearchProduct) {
         image: p.image,
         type: p.type,
         price: p.price,
+        isDiscount: p.isDiscount,
+        discount: p.discount,
       })),
     },
     total,
@@ -127,5 +140,7 @@ export async function userGetPrductById(id: number, langKey: LangKey) {
     type: product.type,
     contact: product.contact,
     gallery: gallery.map((e) => e.image),
+    isDiscount: product.isDiscount,
+    discount: product.discount,
   };
 }

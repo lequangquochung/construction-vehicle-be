@@ -41,6 +41,12 @@ export default class Product {
   @Column({ name: 'price', type: 'numeric', nullable: true })
   price: number;
 
+  @Column({ name: 'discount', type: 'numeric', nullable: true })
+  discount: number;
+
+  @Column({ name: 'isDiscount', type: 'boolean', default: false })
+  isDiscount: boolean;
+
   @Column({ name: 'image', type: 'varchar', length: 255 })
   image: string;
 

@@ -28,6 +28,9 @@ export default class OrderDetail {
   @Column({ name: 'price', type: 'numeric', nullable: true })
   price: number;
 
+  @Column({ name: 'discount', type: 'numeric', default: 0 })
+  discount: number;
+
   @CreateDateColumn({ name: 'created_date', type: 'datetime', nullable: true })
   createdDate: Date;
 

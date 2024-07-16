@@ -56,6 +56,9 @@ export const createProductSchema: AjvSchema = {
     price: {
       type: ['null', 'number'],
     },
+    discount: {
+      type: ['null', 'number'],
+    },
     gallery: {
       type: 'array',
       minItems: 1,
@@ -128,6 +131,9 @@ export const updateProductSchema: AjvSchema = {
       type: ['null', 'number'],
     },
     price: {
+      type: ['null', 'number'],
+    },
+    discount: {
       type: ['null', 'number'],
     },
     gallery: {
