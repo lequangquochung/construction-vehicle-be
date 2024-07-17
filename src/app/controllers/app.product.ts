@@ -16,7 +16,7 @@ export default class UserProductController {
       categoryId: Number(categoryId),
       langKey: languageKey,
       type: type ? type + '' : null,
-      isDiscount: convertDataConfig('BOOLEAN', isDiscount),
+      isDiscount: isDiscount != null && isDiscount.length !== 0 ? convertDataConfig('BOOLEAN', isDiscount) : null,
     });
   }
 
