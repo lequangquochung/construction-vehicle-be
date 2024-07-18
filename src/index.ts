@@ -22,6 +22,7 @@ import User from '$entities/User';
 import { hash } from 'bcryptjs';
 import { AccountStatus, ROLE } from '$enums/index';
 import config from '$config';
+import QuestionTitle from '$entities/QuestionTitle';
 
 const logger = log('Index');
 const app = express();
@@ -33,11 +34,13 @@ connectToDatabase()
     app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
     // Enable public CORS
-    app.use(cors({
-      origin: '*',
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: '*',
-    }));
+    app.use(
+      cors({
+        origin: '*',
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        allowedHeaders: '*',
+      })
+    );
 
     app.use(helmet());
     app.use(logRequest);
@@ -49,25 +52,63 @@ connectToDatabase()
 
     if (process.env.SERVER_TYPE === 'full') {
     }
-  
+
     const userRepository = connection.getRepository(User);
 
-    const admin = await userRepository.findOne({ email: "cogioiducanh@gmail.com" });
+    const admin = await userRepository.findOne({ email: 'cogioiducanh@gmail.com' });
     if (!admin) {
-      const password = await hash("123456", config.auth.SaltRounds);
+      const password = await hash('123456', config.auth.SaltRounds);
 
       const admin = new User();
       admin.id = 1;
       admin.birthday = new Date();
-      admin.email = "cogioiducanh@gmail.com";
+      admin.email = 'cogioiducanh@gmail.com';
       admin.role = ROLE.ADMIN;
-      admin.phoneNumber = "0927633733";
-      admin.username = "cogioiducanh";
-      admin.gender = "MALE";
-      admin.fullName = "ducanh";
+      admin.phoneNumber = '0927633733';
+      admin.username = 'cogioiducanh';
+      admin.gender = 'MALE';
+      admin.fullName = 'ducanh';
       admin.password = password;
       admin.status = AccountStatus.ACTIVE;
       await userRepository.save(admin);
+    }
+
+    const questionTitleRepo = connection.getRepository(QuestionTitle);
+    const questionTitles = await questionTitleRepo.find();
+    if (!questionTitles || questionTitles.length == 0) {
+      const titles = [
+        {
+          id: 1,
+          contentVi: 'Trả góp',
+          contentEn: 'Trả góp',
+        },
+        {
+          id: 2,
+          contentVi: 'Ưu đãi',
+          contentEn: 'Ưu đãi',
+        },
+        {
+          id: 3,
+          contentVi: 'Bảo hành',
+          contentEn: 'Bảo hành',
+        },
+        {
+          id: 4,
+          contentVi: 'Hậu mãi',
+          contentEn: 'Hậu mãi',
+        },
+        {
+          id: 5,
+          contentVi: 'Vận chuyển',
+          contentEn: 'Vận chuyển',
+        },
+        {
+          id: 6,
+          contentVi: 'Sản phẩm',
+          contentEn: 'Sản phẩm',
+        },
+      ];
+      await questionTitleRepo.save(titles);
     }
 
     http.listen(process.env.SERVER_PORT, () => {
@@ -103,7 +144,7 @@ async function connectToDatabase() {
       },
       extra: {
         connectionLimit: 50,
-     },
+      },
       logger: process.env.ENVIRONMENT === 'production' ? new CustomLogger() : undefined,
     };
 

@@ -30,6 +30,7 @@ export enum ErrorCode {
   Order_Must_Be_Processing = 26,
   Search_Order_Need_Email_Or_Phone_Number = 27,
   Order_Not_Your_Own = 28,
+  Question_Title_Not_Exist = 29,
 }
 
 export enum UserStatus {
