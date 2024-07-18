@@ -9,14 +9,18 @@ export default class UserProductController {
   @Get('/:langKey', [])
   async userGetProducts(req: Request) {
     const { langKey } = req.params;
-    const { keyword, categoryId, type, isDiscount } = req.query;
+    const { keyword, categoryId, type, isDiscount, categoryIds } = req.query;
     const languageKey = langKey as LangKey;
     return await service.userGetProducts({
       keyword: keyword ? keyword + '' : null,
       categoryId: Number(categoryId),
       langKey: languageKey,
       type: type ? type + '' : null,
-      isDiscount: isDiscount != null && isDiscount.length !== 0 ? convertDataConfig('BOOLEAN', isDiscount) : null,
+      isDiscount:
+        isDiscount != null && isDiscount.length !== 0
+          ? convertDataConfig('BOOLEAN', isDiscount)
+          : null,
+      categoryIds: categoryIds ? categoryIds + '' : null,
     });
   }
 

@@ -13,6 +13,7 @@ interface ISearchProduct extends NewPagingParams {
   type?: string;
   langKey: LangKey;
   isDiscount?: boolean;
+  categoryIds?: string;
 }
 
 export async function userGetProducts(params: ISearchProduct) {
@@ -78,6 +79,11 @@ export async function userGetProducts(params: ISearchProduct) {
     query.andWhere('p.isDiscount = :isDiscount', {
       isDiscount: params.isDiscount,
     });
+  }
+
+  if (params.categoryIds != null && params.categoryIds.length > 0) {
+    const categoryIds = params.categoryIds.split(',').map(Number);
+    query.andWhere('p.category.id IN (:...categoryIds)', { categoryIds });
   }
 
   query.offset(params.skip).limit(params.pageSize);
