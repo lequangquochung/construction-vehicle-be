@@ -1,3 +1,4 @@
+import Brand from '$entities/Brand';
 import Category from '$entities/Category';
 import Product from '$entities/Product';
 import ProductGallery from '$entities/ProductGallery';
@@ -9,7 +10,7 @@ import { EntityManager, getConnection, getRepository } from 'typeorm';
 
 interface CreateProductDTO {
   name: ITranslation;
-  categoryId: number;
+  brandId: number;
   description: ITranslation;
   model: string;
   contact?: string;
@@ -25,11 +26,11 @@ export async function createProduct(params: CreateProductDTO) {
     const productRepo = transaction.getRepository(Product);
     const translationRepo = transaction.getRepository(Translation);
     const productGalleryRepo = transaction.getRepository(ProductGallery);
-    const categoryRepo = transaction.getRepository(Category);
+    const brandRepo = transaction.getRepository(Brand);
 
-    const category = await categoryRepo.findOne(params.categoryId);
-    if (!category) {
-      throw ErrorCode.Category_Not_Exist;
+    const brand = await brandRepo.findOne(params.brandId);
+    if (!brand) {
+      throw ErrorCode.Brand_Not_Exist;
     }
 
     const nameTranslation = await translationRepo.save({
@@ -49,7 +50,7 @@ export async function createProduct(params: CreateProductDTO) {
       amount: params.amount,
       contact: params.contact,
       price: params.price,
-      category: category,
+      brand: brand,
       name: nameTranslation,
       description: descriptionTranslation,
       status: ProductStatus.AVAILABLE,
@@ -70,7 +71,14 @@ export async function createProduct(params: CreateProductDTO) {
 
 export async function getProductById(id: number) {
   const product = await getRepository(Product).findOne(id, {
-    relations: ['name', 'description', 'category', 'category.name'],
+    relations: [
+      'name',
+      'description',
+      'brand',
+      'brand.name',
+      'brand.category',
+      'brand.category.name',
+    ],
   });
   if (!product) {
     throw ErrorCode.Product_Not_Exist;
@@ -85,11 +93,18 @@ export async function getProductById(id: number) {
       contentEng: product.name.contentEng,
       contentVie: product.name.contentVie,
     },
-    category: {
-      id: product.category.id,
+    brand: {
+      id: product.brand.id,
       name: {
-        contentEng: product.category.name.contentEng,
-        contentVie: product.category.name.contentVie,
+        contentEng: product.brand.name.contentEng,
+        contentVie: product.brand.name.contentVie,
+      },
+    },
+    category: {
+      id: product.brand.category.id,
+      name: {
+        contentEng: product.brand.category.name.contentEng,
+        contentVie: product.brand.category.name.contentVie,
       },
     },
     description: {
@@ -111,7 +126,7 @@ export async function getProductById(id: number) {
 interface UpdateProductDTO {
   id: number;
   name: ITranslation;
-  categoryId: number;
+  brandId: number;
   description: ITranslation;
   model: string;
   contact?: string;
@@ -126,22 +141,29 @@ interface UpdateProductDTO {
 export async function updateProduct(params: UpdateProductDTO) {
   return await getConnection().transaction(async (transaction: EntityManager) => {
     const productRepo = transaction.getRepository(Product);
-    const categoryRepo = transaction.getRepository(Category);
+    const brandRepo = transaction.getRepository(Brand);
     const translationRepo = transaction.getRepository(Translation);
     const productGalleryRepo = transaction.getRepository(ProductGallery);
 
     const product = await productRepo.findOne(params.id, {
-      relations: ['name', 'description', 'category', 'category.name'],
+      relations: [
+        'name',
+        'description',
+        'brand',
+        'brand.name',
+        'brand.category',
+        'brand.category.name',
+      ],
     });
 
-    if (params.categoryId !== product.category.id) {
-      const newCategory = await categoryRepo.findOne(params.categoryId, {
+    if (params.brandId !== product.brand.id) {
+      const newBrand = await brandRepo.findOne(params.brandId, {
         relations: ['name'],
       });
-      if (!newCategory) {
+      if (!newBrand) {
         throw ErrorCode.Category_Not_Exist;
       }
-      product.category = newCategory;
+      product.brand = newBrand;
     }
 
     await translationRepo.update(product.name.id, {
@@ -165,7 +187,7 @@ export async function updateProduct(params: UpdateProductDTO) {
     }));
     await productGalleryRepo.save(newProductGallery);
     await productRepo.update(params.id, {
-      category: product.category,
+      brand: product.brand,
       model: params.model,
       contact: params.contact,
       amount: params.amount,
@@ -181,11 +203,18 @@ export async function updateProduct(params: UpdateProductDTO) {
         contentEng: product.name.contentEng,
         contentVie: product.name.contentVie,
       },
-      category: {
-        id: product.category.id,
+      brand: {
+        id: product.brand.id,
         name: {
-          contentEng: product.category.name.contentEng,
-          contentVie: product.category.name.contentVie,
+          contentEng: product.brand.name.contentEng,
+          contentVie: product.brand.name.contentVie,
+        },
+      },
+      category: {
+        id: product.brand.category.id,
+        name: {
+          contentEng: product.brand.category.name.contentEng,
+          contentVie: product.brand.category.name.contentVie,
         },
       },
       description: {
@@ -233,6 +262,8 @@ interface ISearchProduct extends NewPagingParams {
   keyword?: string;
   type?: string;
   isDiscount?: boolean;
+  brandId?: number;
+  categoryId?: number;
 }
 
 export async function getListProduct(params: ISearchProduct) {
@@ -241,6 +272,10 @@ export async function getListProduct(params: ISearchProduct) {
     .createQueryBuilder('p')
     .innerJoin(Translation, 'nt', 'nt.id = p.name.id')
     .innerJoin(Translation, 'dt', 'dt.id = p.description.id')
+    .innerJoin(Brand, 'b', 'b.id = p.brand.id')
+    .innerJoin(Translation, 'bnt', 'bnt.id = b.name.id')
+    .innerJoin(Category, 'c', 'c.id = b.category.id')
+    .innerJoin(Translation, 'cnt', 'cnt.id = c.name.id')
     .select([
       'p.id as id',
       'nt.contentEng as nameEng',
@@ -255,6 +290,12 @@ export async function getListProduct(params: ISearchProduct) {
       'p.type as type',
       'p.isDiscount as isDiscount',
       'p.discount as discount',
+      'b.id as brandId',
+      'bnt.contentEng as brandNameEng',
+      'bnt.contentVie as brandNameVie',
+      'c.id as categoryId',
+      'cnt.contentEng as categoryNameEng',
+      'cnt.contentVie as categoryNameVie',
     ])
     .orderBy('p.id', 'ASC')
     .where('1=1');
@@ -271,9 +312,22 @@ export async function getListProduct(params: ISearchProduct) {
       type: params.type,
     });
   }
+
   if (params.isDiscount != null) {
     query.andWhere('p.isDiscount = :isDiscount', {
       isDiscount: convertDataConfig('BOOLEAN', params.isDiscount),
+    });
+  }
+
+  if (params.brandId) {
+    query.andWhere('b.id = :brandId ', {
+      brandId: params.brandId,
+    });
+  }
+
+  if (params.categoryId) {
+    query.andWhere('c.id = :categoryId ', {
+      categoryId: params.categoryId,
     });
   }
   query.offset(params.skip).limit(params.pageSize);
@@ -300,6 +354,20 @@ export async function getListProduct(params: ISearchProduct) {
         type: p.type,
         isDiscount: p.isDiscount,
         discount: p.discount,
+        brand: {
+          id: p.brandId,
+          name: {
+            contentEng: p.brandNameEng,
+            contentVie: p.brandNameVie,
+          },
+        },
+        category: {
+          id: p.categoryId,
+          name: {
+            contentEng: p.categoryNameEng,
+            contentVie: p.categoryNameVie,
+          },
+        },
       })),
     },
     total,

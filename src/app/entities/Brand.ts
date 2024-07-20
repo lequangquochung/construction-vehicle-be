@@ -5,13 +5,11 @@ import {
   CreateDateColumn,
   ManyToOne,
   JoinColumn,
-  Column,
-  OneToMany,
 } from 'typeorm';
 import Translation from './Translation';
-import Brand from './Brand';
-@Entity('category')
-export default class Category {
+import Category from './Category';
+@Entity('brand')
+export default class Brand {
   @PrimaryGeneratedColumn({ name: 'id', type: 'int', unsigned: true })
   id: number;
 
@@ -19,11 +17,9 @@ export default class Category {
   @JoinColumn({ name: 'name_translation_id' })
   name: Translation;
 
-  @Column({ name: 'image', type: 'varchar', length: 255 })
-  image: string;
-
-  @OneToMany(() => Brand, (brand) => brand.category)
-  brands: Brand[];
+  @ManyToOne(() => Category)
+  @JoinColumn({ name: 'category_id' })
+  category: Category;
 
   @CreateDateColumn({ name: 'created_date', type: 'datetime', nullable: true })
   createdDate: Date;

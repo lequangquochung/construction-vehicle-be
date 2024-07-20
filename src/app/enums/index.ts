@@ -31,6 +31,7 @@ export enum ErrorCode {
   Search_Order_Need_Email_Or_Phone_Number = 27,
   Order_Not_Your_Own = 28,
   Question_Title_Not_Exist = 29,
+  Brand_Not_Exist = 30,
 }
 
 export enum UserStatus {

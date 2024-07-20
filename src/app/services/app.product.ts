@@ -1,3 +1,4 @@
+import Brand from '$entities/Brand';
 import Category from '$entities/Category';
 import Product from '$entities/Product';
 import ProductGallery from '$entities/ProductGallery';
@@ -14,6 +15,7 @@ interface ISearchProduct extends NewPagingParams {
   langKey: LangKey;
   isDiscount?: boolean;
   categoryIds?: string;
+  brandId?: number;
 }
 
 export async function userGetProducts(params: ISearchProduct) {
@@ -22,7 +24,9 @@ export async function userGetProducts(params: ISearchProduct) {
     .createQueryBuilder('p')
     .innerJoin(Translation, 'nt', 'nt.id = p.name.id')
     .innerJoin(Translation, 'dt', 'dt.id = p.description.id')
-    .innerJoin(Category, 'c', 'c.id = p.category.id')
+    .innerJoin(Brand, 'b', 'b.id = p.brand.id')
+    .innerJoin(Translation, 'bnt', 'bnt.id = b.name.id')
+    .innerJoin(Category, 'c', 'c.id = b.category.id')
     .innerJoin(Translation, 'cnt', 'cnt.id = c.name.id');
 
   if (params.langKey === LangKey.ENG) {
@@ -30,6 +34,8 @@ export async function userGetProducts(params: ISearchProduct) {
       'p.id as id',
       'nt.contentEng as name',
       'dt.contentEng as description',
+      'b.id as brandId',
+      'bnt.contentEng as brandName',
       'c.id as categoryId',
       'cnt.contentEng as categoryName',
       'p.model as model',
@@ -44,6 +50,8 @@ export async function userGetProducts(params: ISearchProduct) {
       'p.id as id',
       'nt.contentVie as name',
       'dt.contentVie as description',
+      'b.id as brandId',
+      'bnt.contentVie as brandName',
       'c.id as categoryId',
       'cnt.contentVie as categoryName',
       'p.model as model',
@@ -64,7 +72,7 @@ export async function userGetProducts(params: ISearchProduct) {
   }
 
   if (params.categoryId) {
-    query.andWhere('p.category.id = :categoryId', {
+    query.andWhere('c.id = :categoryId', {
       categoryId: params.categoryId,
     });
   }
@@ -83,7 +91,11 @@ export async function userGetProducts(params: ISearchProduct) {
 
   if (params.categoryIds != null && params.categoryIds.length > 0) {
     const categoryIds = params.categoryIds.split(',').map(Number);
-    query.andWhere('p.category.id IN (:...categoryIds)', { categoryIds });
+    query.andWhere('c.id IN (:...categoryIds)', { categoryIds });
+  }
+
+  if (params.brandId) {
+    query.andWhere('b.id = :brandId', { brandId: params.brandId });
   }
 
   query.offset(params.skip).limit(params.pageSize);
@@ -100,6 +112,10 @@ export async function userGetProducts(params: ISearchProduct) {
           id: p.categoryId,
           name: p.categoryName,
         },
+        brand: {
+          id: p.brandId,
+          name: p.brandName,
+        },
         model: p.model,
         image: p.image,
         type: p.type,
@@ -115,7 +131,14 @@ export async function userGetProducts(params: ISearchProduct) {
 
 export async function userGetPrductById(id: number, langKey: LangKey) {
   const product = await getRepository(Product).findOne(id, {
-    relations: ['name', 'description', 'category', 'category.name'],
+    relations: [
+      'name',
+      'description',
+      'brand',
+      'brand.name',
+      'brand.category',
+      'brand.category.name',
+    ],
   });
 
   if (!product) {
@@ -132,11 +155,15 @@ export async function userGetPrductById(id: number, langKey: LangKey) {
     description:
       langKey === LangKey.ENG ? product.description.contentEng : product.description.contentVie,
     category: {
-      id: product.category.id,
+      id: product.brand.category.id,
       name:
         langKey === LangKey.ENG
-          ? product.category.name.contentEng
-          : product.category.name.contentVie,
+          ? product.brand.category.name.contentEng
+          : product.brand.category.name.contentVie,
+    },
+    brand: {
+      id: product.brand.id,
+      name: langKey === LangKey.ENG ? product.brand.name.contentEng : product.brand.name.contentVie,
     },
     model: product.model,
     status: product.status,
