@@ -14,6 +14,7 @@ interface ISearchProduct extends NewPagingParams {
   type?: string;
   langKey: LangKey;
   isDiscount?: boolean;
+  isHot?: boolean;
   categoryIds?: string;
   brandId?: number;
 }
@@ -43,6 +44,7 @@ export async function userGetProducts(params: ISearchProduct) {
       'p.type as type',
       'p.price as price',
       'p.isDiscount as isDiscount',
+      'p.isHot as isHot',
       'p.discount as discount',
     ]);
   } else {
@@ -59,6 +61,7 @@ export async function userGetProducts(params: ISearchProduct) {
       'p.type as type',
       'p.price as price',
       'p.isDiscount as isDiscount',
+      'p.isHot as isHot',
       'p.discount as discount',
     ]);
   }
@@ -89,6 +92,12 @@ export async function userGetProducts(params: ISearchProduct) {
     });
   }
 
+  if (params.isHot != null) {
+    query.andWhere('p.isHot = :isHot', {
+      isDiscount: params.isHot,
+    });
+  }
+
   if (params.categoryIds != null && params.categoryIds.length > 0) {
     const categoryIds = params.categoryIds.split(',').map(Number);
     query.andWhere('c.id IN (:...categoryIds)', { categoryIds });
@@ -99,7 +108,7 @@ export async function userGetProducts(params: ISearchProduct) {
   }
 
   query.offset(params.skip).limit(params.pageSize);
-  query.orderBy('p.id', 'ASC');
+  query.orderBy('p.isHot', 'DESC');
 
   const [data, total] = await Promise.all([query.getRawMany(), query.getCount()]);
   return returnPaging(
@@ -121,6 +130,7 @@ export async function userGetProducts(params: ISearchProduct) {
         type: p.type,
         price: p.price,
         isDiscount: p.isDiscount,
+        isHot: p.isHot,
         discount: p.discount,
       })),
     },
@@ -174,6 +184,7 @@ export async function userGetPrductById(id: number, langKey: LangKey) {
     contact: product.contact,
     gallery: gallery.map((e) => e.image),
     isDiscount: product.isDiscount,
+    isHot: product.isHot,
     discount: product.discount,
   };
 }

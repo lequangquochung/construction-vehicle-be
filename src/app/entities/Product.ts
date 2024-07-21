@@ -47,6 +47,9 @@ export default class Product {
   @Column({ name: 'isDiscount', type: 'boolean', default: false })
   isDiscount: boolean;
 
+  @Column({ name: 'isHot', type: 'boolean', default: false })
+  isHot: boolean;
+
   @Column({ name: 'image', type: 'varchar', length: 255 })
   image: string;
 

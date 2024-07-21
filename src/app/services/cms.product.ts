@@ -19,6 +19,7 @@ interface CreateProductDTO {
   gallery: string[];
   type: ProductType;
   discount: number;
+  isHot?: boolean | false;
 }
 
 export async function createProduct(params: CreateProductDTO) {
@@ -58,6 +59,7 @@ export async function createProduct(params: CreateProductDTO) {
       type: params.type ? params.type : ProductType.VEHICLE,
       isDiscount: params.discount == null || params.discount == 0 ? false : true,
       discount: params.discount,
+      isHot: params.isHot,
     });
 
     const gallery = params.gallery.map((e) => ({
@@ -120,6 +122,7 @@ export async function getProductById(id: number) {
     gallery: gallery.map((e) => e.image),
     isDiscount: product.isDiscount,
     discount: product.discount,
+    isHot: product.isHot,
   };
 }
 
@@ -136,6 +139,7 @@ interface UpdateProductDTO {
   status: ProductStatus;
   type: ProductType;
   discount?: number;
+  isHot?: boolean | false;
 }
 
 export async function updateProduct(params: UpdateProductDTO) {
@@ -196,6 +200,7 @@ export async function updateProduct(params: UpdateProductDTO) {
       type: params.type ? params.type : product.type,
       isDiscount: params.discount == null || params.discount == 0 ? false : true,
       discount: params.discount,
+      isHot: params.isHot,
     });
     return {
       id: product.id,
@@ -230,6 +235,7 @@ export async function updateProduct(params: UpdateProductDTO) {
       type: params.type ? params.type : product.type,
       isDiscount: params.discount == null || params.discount == 0 ? false : true,
       discount: params.discount,
+      isHot: params.isHot,
     };
   });
 }
@@ -264,6 +270,7 @@ interface ISearchProduct extends NewPagingParams {
   isDiscount?: boolean;
   brandId?: number;
   categoryId?: number;
+  isHot?: boolean;
 }
 
 export async function getListProduct(params: ISearchProduct) {
@@ -289,6 +296,7 @@ export async function getListProduct(params: ISearchProduct) {
       'p.price as price',
       'p.type as type',
       'p.isDiscount as isDiscount',
+      'p.isHot as isHot',
       'p.discount as discount',
       'b.id as brandId',
       'bnt.contentEng as brandNameEng',
@@ -316,6 +324,12 @@ export async function getListProduct(params: ISearchProduct) {
   if (params.isDiscount != null) {
     query.andWhere('p.isDiscount = :isDiscount', {
       isDiscount: convertDataConfig('BOOLEAN', params.isDiscount),
+    });
+  }
+
+  if (params.isHot != null) {
+    query.andWhere('p.isHot = :isHot', {
+      isDiscount: convertDataConfig('BOOLEAN', params.isHot),
     });
   }
 
@@ -353,6 +367,7 @@ export async function getListProduct(params: ISearchProduct) {
         amount: p.amount,
         type: p.type,
         isDiscount: p.isDiscount,
+        isHot: p.isHot,
         discount: p.discount,
         brand: {
           id: p.brandId,
