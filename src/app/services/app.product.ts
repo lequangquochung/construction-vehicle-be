@@ -94,7 +94,7 @@ export async function userGetProducts(params: ISearchProduct) {
 
   if (params.isHot != null) {
     query.andWhere('p.isHot = :isHot', {
-      isDiscount: params.isHot,
+      isHot: params.isHot,
     });
   }
 
