@@ -96,6 +96,12 @@ export async function userGetCategories(params: ISearchCategory) {
     let totalProductCount = c.brands.reduce((total, brand) => total + brand.productCount, 0);
     c.productCount = totalProductCount;
   });
+
+  if (params.type != null && params.type != '') {
+    categories.filter((c) => {
+      c.productCount > 0;
+    });
+  }
   return {
     data: categories,
     total: categories.length,
