@@ -91,16 +91,14 @@ export async function userGetCategories(params: ISearchCategory) {
     });
   });
 
-  const categories = Array.from(categoryMap.values());
+  let categories = Array.from(categoryMap.values());
   categories.forEach((c) => {
     let totalProductCount = c.brands.reduce((total, brand) => total + brand.productCount, 0);
     c.productCount = totalProductCount;
   });
 
   if (params.type != null && params.type != '') {
-    categories.filter((c) => {
-      c.productCount > 0;
-    });
+    categories = categories.filter((c) => c.productCount > 0);
   }
   return {
     data: categories,
