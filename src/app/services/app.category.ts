@@ -24,7 +24,6 @@ export async function userGetCategories(params: ISearchCategory) {
     .addSelect('COUNT(p.id)', 'productCount');
   if (params.type != null && params.type != '') {
     productCountSubquery.where("p.type = '" + params.type + "'");
-    console.log({type: params.type});
   }
   productCountSubquery.groupBy('p.brand.id');
 
@@ -70,6 +69,8 @@ export async function userGetCategories(params: ISearchCategory) {
   const data = await categoryQuery.getRawMany();
 
   const categoryMap = new Map();
+
+  console.log({data: data});
 
   data.forEach((o) => {
     if (!categoryMap.has(o.id)) {
