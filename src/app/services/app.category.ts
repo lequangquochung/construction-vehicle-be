@@ -25,6 +25,7 @@ export async function userGetCategories(params: ISearchCategory) {
   if (params.type) {
     productCountSubquery.where("p.type = '" + params.type + "'");
   }
+  console.log({type: params.type});
   productCountSubquery.groupBy('p.brand.id');
 
   categoryQuery.leftJoinAndSelect(
