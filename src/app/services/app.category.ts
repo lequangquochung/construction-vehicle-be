@@ -22,10 +22,10 @@ export async function userGetCategories(params: ISearchCategory) {
     .createQueryBuilder('p')
     .select('p.brand.id', 'brandId')
     .addSelect('COUNT(p.id)', 'productCount');
-  if (params.type) {
+  if (params.type != null && params.type != '') {
     productCountSubquery.where("p.type = '" + params.type + "'");
+    console.log({type: params.type});
   }
-  console.log({type: params.type});
   productCountSubquery.groupBy('p.brand.id');
 
   categoryQuery.leftJoinAndSelect(
