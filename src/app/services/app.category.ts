@@ -64,7 +64,8 @@ export async function userGetCategories(params: ISearchCategory) {
   if (params.type != null && params.type != '') {
     brandQuery.andWhere('p.type = :type', { type: params.type });
   }
-  brandQuery.orderBy('b.id', 'ASC');
+  brandQuery.groupBy('b.id, bnt.contentEng, b.category.id').orderBy('b.id', 'ASC');
+
   const brands = await brandQuery.getRawMany();
 
   const categoryMap = new Map();
