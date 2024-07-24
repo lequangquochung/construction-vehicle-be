@@ -10,7 +10,6 @@ import { getRepository } from 'typeorm';
 
 interface ISearchProduct extends NewPagingParams {
   keyword?: string;
-  categoryId?: number;
   type?: string;
   langKey: LangKey;
   isDiscount?: boolean;
@@ -27,7 +26,7 @@ export async function userGetProducts(params: ISearchProduct) {
     .innerJoin(Translation, 'dt', 'dt.id = p.description.id')
     .innerJoin(Brand, 'b', 'b.id = p.brand.id')
     .innerJoin(Translation, 'bnt', 'bnt.id = b.name.id')
-    .innerJoin(Category, 'c', 'c.id = b.category.id')
+    .innerJoin(Category, 'c', 'c.id = p.category.id')
     .innerJoin(Translation, 'cnt', 'cnt.id = c.name.id');
 
   if (params.langKey === LangKey.ENG) {
@@ -71,12 +70,6 @@ export async function userGetProducts(params: ISearchProduct) {
     query.andWhere('p.id = :id OR nt.contentEng LIKE :keyword OR nt.contentVie LIKE :keyword', {
       id: params.keyword,
       keyword: '%' + params.keyword + '%',
-    });
-  }
-
-  if (params.categoryId) {
-    query.andWhere('c.id = :categoryId', {
-      categoryId: params.categoryId,
     });
   }
 
@@ -141,14 +134,7 @@ export async function userGetProducts(params: ISearchProduct) {
 
 export async function userGetPrductById(id: number, langKey: LangKey) {
   const product = await getRepository(Product).findOne(id, {
-    relations: [
-      'name',
-      'description',
-      'brand',
-      'brand.name',
-      'brand.category',
-      'brand.category.name',
-    ],
+    relations: ['name', 'description', 'brand', 'brand.name', 'category', 'category.name'],
   });
 
   if (!product) {
@@ -165,11 +151,11 @@ export async function userGetPrductById(id: number, langKey: LangKey) {
     description:
       langKey === LangKey.ENG ? product.description.contentEng : product.description.contentVie,
     category: {
-      id: product.brand.category.id,
+      id: product.category.id,
       name:
         langKey === LangKey.ENG
-          ? product.brand.category.name.contentEng
-          : product.brand.category.name.contentVie,
+          ? product.category.name.contentEng
+          : product.category.name.contentVie,
     },
     brand: {
       id: product.brand.id,

@@ -12,6 +12,16 @@ export default class UserCategoryController {
     return await service.userGetCategories({ ...req.query, langKey: languageKey });
   }
 
+  @Get('/side-bar/:langKey', [])
+  async userGetSideBar(req: Request) {
+    const { langKey } = req.params;
+    const languageKey = langKey as LangKey;
+    return await service.userGetSideBar({
+      type: req.query.type != null && req.query.type != '' ? req.query.type + '' : null,
+      langKey: languageKey,
+    });
+  }
+
   @Get('/:id/:langKey', [])
   async userGetCategoryById(req: Request) {
     const { id, langKey } = req.params;

@@ -2,7 +2,7 @@ import { EntityManager, getConnection, getRepository } from 'typeorm';
 import Category from '$entities/Category';
 import Translation from '$entities/Translation';
 import { ErrorCode } from '$enums/index';
-import { ITranslation, PagingParams } from '$interfaces/common';
+import { ITranslation } from '$interfaces/common';
 
 interface CreateCategoryDTO {
   name: ITranslation;

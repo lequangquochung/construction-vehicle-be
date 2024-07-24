@@ -1,6 +1,6 @@
 export const createProductSchema: AjvSchema = {
   type: 'object',
-  required: ['name', 'brandId', 'description', 'model', 'gallery'],
+  required: ['name', 'brandId', 'categoryId', 'description', 'model', 'gallery'],
   additionalProperties: false,
   properties: {
     name: {
@@ -20,7 +20,9 @@ export const createProductSchema: AjvSchema = {
     },
     brandId: {
       type: 'number',
-      minimum: 1,
+    },
+    categoryId: {
+      type: 'number',
     },
     description: {
       type: 'object',
@@ -71,7 +73,7 @@ export const createProductSchema: AjvSchema = {
 
 export const updateProductSchema: AjvSchema = {
   type: 'object',
-  required: ['id', 'status', 'name', 'brandId', 'description', 'model', 'gallery'],
+  required: ['id', 'status', 'name', 'brandId', 'categoryId', 'description', 'model', 'gallery'],
   additionalProperties: false,
   properties: {
     id: {
@@ -100,7 +102,9 @@ export const updateProductSchema: AjvSchema = {
     },
     brandId: {
       type: 'number',
-      minimum: 1,
+    },
+    categoryId: {
+      type: 'number',
     },
     description: {
       type: 'object',

@@ -1,6 +1,6 @@
 export const createBrandSchema: AjvSchema = {
   type: 'object',
-  required: ['name', 'categoryId'],
+  required: ['name'],
   additionalProperties: false,
   properties: {
     name: {
@@ -17,16 +17,13 @@ export const createBrandSchema: AjvSchema = {
           maxLength: 255,
         },
       },
-    },
-    categoryId: {
-      type: 'number',
     },
   },
 };
 
 export const updateBrandSchema: AjvSchema = {
   type: 'object',
-  required: ['id', 'name', 'categoryId'],
+  required: ['id', 'name'],
   additionalProperties: false,
   properties: {
     name: {
@@ -43,9 +40,6 @@ export const updateBrandSchema: AjvSchema = {
           maxLength: 255,
         },
       },
-    },
-    categoryId: {
-      type: 'number',
     },
     id: {
       type: 'number',

@@ -9,11 +9,10 @@ export default class UserProductController {
   @Get('/:langKey', [])
   async userGetProducts(req: Request) {
     const { langKey } = req.params;
-    const { keyword, categoryId, type, isDiscount, categoryIds, brandId, isHot } = req.query;
+    const { keyword, type, isDiscount, categoryIds, brandId, isHot } = req.query;
     const languageKey = langKey as LangKey;
     return await service.userGetProducts({
       keyword: keyword ? keyword + '' : null,
-      categoryId: Number(categoryId),
       langKey: languageKey,
       type: type ? type + '' : null,
       isDiscount:

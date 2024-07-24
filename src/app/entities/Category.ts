@@ -22,9 +22,6 @@ export default class Category {
   @Column({ name: 'image', type: 'varchar', length: 255 })
   image: string;
 
-  @OneToMany(() => Brand, (brand) => brand.category)
-  brands: Brand[];
-
   @CreateDateColumn({ name: 'created_date', type: 'datetime', nullable: true })
   createdDate: Date;
 

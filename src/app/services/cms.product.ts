@@ -11,6 +11,7 @@ import { EntityManager, getConnection, getRepository } from 'typeorm';
 interface CreateProductDTO {
   name: ITranslation;
   brandId: number;
+  categoryId: number;
   description: ITranslation;
   model: string;
   contact?: string;
@@ -28,10 +29,16 @@ export async function createProduct(params: CreateProductDTO) {
     const translationRepo = transaction.getRepository(Translation);
     const productGalleryRepo = transaction.getRepository(ProductGallery);
     const brandRepo = transaction.getRepository(Brand);
+    const categoryRepo = transaction.getRepository(Category);
 
     const brand = await brandRepo.findOne(params.brandId);
     if (!brand) {
       throw ErrorCode.Brand_Not_Exist;
+    }
+
+    const category = await categoryRepo.findOne(params.categoryId);
+    if (!category) {
+      throw ErrorCode.Category_Not_Exist;
     }
 
     const nameTranslation = await translationRepo.save({
@@ -60,6 +67,7 @@ export async function createProduct(params: CreateProductDTO) {
       isDiscount: params.discount == null || params.discount == 0 ? false : true,
       discount: params.discount,
       isHot: params.isHot,
+      category: category,
     });
 
     const gallery = params.gallery.map((e) => ({
@@ -73,14 +81,7 @@ export async function createProduct(params: CreateProductDTO) {
 
 export async function getProductById(id: number) {
   const product = await getRepository(Product).findOne(id, {
-    relations: [
-      'name',
-      'description',
-      'brand',
-      'brand.name',
-      'brand.category',
-      'brand.category.name',
-    ],
+    relations: ['name', 'description', 'brand', 'brand.name', 'category', 'category.name'],
   });
   if (!product) {
     throw ErrorCode.Product_Not_Exist;
@@ -103,10 +104,10 @@ export async function getProductById(id: number) {
       },
     },
     category: {
-      id: product.brand.category.id,
+      id: product.category.id,
       name: {
-        contentEng: product.brand.category.name.contentEng,
-        contentVie: product.brand.category.name.contentVie,
+        contentEng: product.category.name.contentEng,
+        contentVie: product.category.name.contentVie,
       },
     },
     description: {
@@ -130,6 +131,7 @@ interface UpdateProductDTO {
   id: number;
   name: ITranslation;
   brandId: number;
+  categoryId: number;
   description: ITranslation;
   model: string;
   contact?: string;
@@ -148,16 +150,10 @@ export async function updateProduct(params: UpdateProductDTO) {
     const brandRepo = transaction.getRepository(Brand);
     const translationRepo = transaction.getRepository(Translation);
     const productGalleryRepo = transaction.getRepository(ProductGallery);
+    const categryRepo = transaction.getRepository(Category);
 
     const product = await productRepo.findOne(params.id, {
-      relations: [
-        'name',
-        'description',
-        'brand',
-        'brand.name',
-        'brand.category',
-        'brand.category.name',
-      ],
+      relations: ['name', 'description', 'brand', 'brand.name', 'category', 'category.name'],
     });
 
     if (params.brandId !== product.brand.id) {
@@ -165,9 +161,19 @@ export async function updateProduct(params: UpdateProductDTO) {
         relations: ['name'],
       });
       if (!newBrand) {
-        throw ErrorCode.Category_Not_Exist;
+        throw ErrorCode.Brand_Not_Exist;
       }
       product.brand = newBrand;
+    }
+
+    if (params.categoryId !== product.category.id) {
+      const newCategry = await categryRepo.findOne(params.categoryId, {
+        relations: ['name'],
+      });
+      if (!newCategry) {
+        throw ErrorCode.Category_Not_Exist;
+      }
+      product.category = newCategry;
     }
 
     await translationRepo.update(product.name.id, {
@@ -192,6 +198,7 @@ export async function updateProduct(params: UpdateProductDTO) {
     await productGalleryRepo.save(newProductGallery);
     await productRepo.update(params.id, {
       brand: product.brand,
+      category: product.category,
       model: params.model,
       contact: params.contact,
       amount: params.amount,
@@ -216,10 +223,10 @@ export async function updateProduct(params: UpdateProductDTO) {
         },
       },
       category: {
-        id: product.brand.category.id,
+        id: product.category.id,
         name: {
-          contentEng: product.brand.category.name.contentEng,
-          contentVie: product.brand.category.name.contentVie,
+          contentEng: product.category.name.contentEng,
+          contentVie: product.category.name.contentVie,
         },
       },
       description: {
@@ -281,7 +288,7 @@ export async function getListProduct(params: ISearchProduct) {
     .innerJoin(Translation, 'dt', 'dt.id = p.description.id')
     .innerJoin(Brand, 'b', 'b.id = p.brand.id')
     .innerJoin(Translation, 'bnt', 'bnt.id = b.name.id')
-    .innerJoin(Category, 'c', 'c.id = b.category.id')
+    .innerJoin(Category, 'c', 'c.id = p.category.id')
     .innerJoin(Translation, 'cnt', 'cnt.id = c.name.id')
     .select([
       'p.id as id',

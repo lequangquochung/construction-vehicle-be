@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import Translation from './Translation';
 import Brand from './Brand';
+import Category from './Category';
 @Entity('product')
 export default class Product {
   @PrimaryGeneratedColumn({ name: 'id', type: 'int', unsigned: true })
@@ -21,6 +22,10 @@ export default class Product {
   @ManyToOne(() => Brand)
   @JoinColumn({ name: 'brand_id' })
   brand: Brand;
+
+  @ManyToOne(() => Category)
+  @JoinColumn({ name: 'category_id' })
+  category: Category;
 
   @ManyToOne(() => Translation, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'description_translation_id' })

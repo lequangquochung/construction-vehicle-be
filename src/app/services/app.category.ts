@@ -8,18 +8,28 @@ import { getRepository } from 'typeorm';
 interface ISearchCategory {
   keyword?: string;
   langKey: LangKey;
-  type?: string;
 }
 
 export async function userGetCategories(params: ISearchCategory) {
   const categoryQuery = getRepository(Category)
     .createQueryBuilder('r')
-    .innerJoin(Translation, 'nt', 'nt.id = r.name.id');
+    .innerJoin(Translation, 'nt', 'nt.id = r.name.id')
+    .leftJoinAndMapMany('r.products', Product, 'p', 'p.category.id = r.id');
 
   const selectFields =
     params.langKey === LangKey.ENG
-      ? ['r.id AS id', 'nt.contentEng AS name', 'r.image AS image']
-      : ['r.id AS id', 'nt.contentVie AS name', 'r.image AS image'];
+      ? [
+          'r.id AS id',
+          'nt.contentEng AS name',
+          'r.image AS image',
+          'COALESCE(COUNT(p.id), 0) as productCount',
+        ]
+      : [
+          'r.id AS id',
+          'nt.contentVie AS name',
+          'r.image AS image',
+          'COALESCE(COUNT(p.id), 0) as productCount',
+        ];
 
   categoryQuery.select(selectFields);
 
@@ -32,83 +42,25 @@ export async function userGetCategories(params: ISearchCategory) {
       }
     );
   }
-
+  categoryQuery.groupBy('r.id');
   categoryQuery.orderBy('r.id', 'ASC');
 
-  const categoryData = await categoryQuery.getRawMany();
-  const categoryIds = categoryData.map((c) => c.id);
+  const [data, total] = await Promise.all([categoryQuery.getRawMany(), categoryQuery.getCount()]);
 
-  const brandQuery = getRepository(Brand)
-    .createQueryBuilder('b')
-    .innerJoin(Translation, 'bnt', 'bnt.id = b.name.id')
-    .leftJoinAndMapMany('b.products', Product, 'p', 'b.id = p.brand.id');
-
-  const brandSelectFields =
-    params.langKey === LangKey.ENG
-      ? [
-          'b.id AS id',
-          'bnt.contentEng AS name',
-          'b.category.id AS categoryId',
-          'COALESCE(COUNT(p.id), 0) AS productCount',
-        ]
-      : [
-          'b.id AS id',
-          'bnt.contentVie AS name',
-          'b.category.id AS categoryId',
-          'COALESCE(COUNT(p.id), 0) AS productCount',
-        ];
-  brandQuery.select(brandSelectFields);
-
-  brandQuery.where('b.category.id IN (:...categoryIds)', { categoryIds: categoryIds });
-
-  if (params.type != null && params.type != '') {
-    brandQuery.andWhere('p.type = :type', { type: params.type });
-  }
-  brandQuery.groupBy('b.id, bnt.contentEng, b.category.id').orderBy('b.id', 'ASC');
-
-  const brands = await brandQuery.getRawMany();
-
-  const categoryMap = new Map();
-
-  categoryData.forEach((c) => {
-    if (!categoryMap.has(c.id)) {
-      categoryMap.set(c.id, {
-        id: c.id,
-        name: c.name,
-        image: c.image,
-        brands: [],
-      });
-    }
-
-    brands.forEach((b) => {
-      if (b.categoryId == c.id) {
-        categoryMap.get(c.id).brands.push({
-          id: b.id,
-          name: b.name,
-          productCount: b.productCount,
-        });
-      }
-    });
-  });
-
-  let categories = Array.from(categoryMap.values());
-  categories.forEach((c) => {
-    let totalProductCount = c.brands.reduce((total, brand) => total + brand.productCount, 0);
-    c.productCount = totalProductCount;
-  });
-
-  if (params.type != null && params.type != '') {
-    categories = categories.filter((c) => c.productCount > 0);
-  }
   return {
-    data: categories,
-    total: categories.length,
+    data: data.map((d) => ({
+      id: d.id,
+      name: d.name,
+      image: d.image,
+      productCount: d.productCount,
+    })),
+    total,
   };
 }
 
 export async function userGetCategoryById(id: number, langKey: LangKey) {
   const category = await getRepository(Category).findOne(id, {
-    relations: ['name', 'brands', 'brands.name'],
+    relations: ['name'],
   });
   if (!category) {
     throw ErrorCode.Category_Not_Exist;
@@ -117,9 +69,52 @@ export async function userGetCategoryById(id: number, langKey: LangKey) {
     id: category.id,
     name: LangKey.ENG === langKey ? category.name.contentEng : category.name.contentVie,
     image: category.image,
-    brands: category.brands.map((b) => ({
-      id: b.id,
-      name: LangKey.ENG === langKey ? b.name.contentEng : b.name.contentVie,
-    })),
+  };
+}
+
+interface ISideBar {
+  langKey: LangKey;
+  type?: string;
+}
+
+export async function userGetSideBar(params: ISideBar) {
+  const categoryRepo = getRepository(Category);
+  const brandRepo = getRepository(Brand);
+  const productRepo = getRepository(Product);
+
+  const categories = await categoryRepo.find({ relations: ['name'] });
+  const brands = await brandRepo.find({ relations: ['name'] });
+
+  const productQuery = productRepo
+    .createQueryBuilder('p')
+    .select([
+      'p.id as id',
+      'p.type as type',
+      'p.brand.id as brandId',
+      'p.category.id as categoryId',
+    ]);
+
+  if (params.type != null && params.type != '') {
+    productQuery.where('p.type = :type', { type: params.type });
+  }
+  const products = await productQuery.getRawMany();
+
+  let data = [];
+  categories.forEach((c) => {
+    const arrProduct = products.filter((p) => p.categoryId == c.id);
+    let item = {
+      categoryId: c.id,
+      categoryName: LangKey.ENG === params.langKey ? c.name.contentEng : c.name.contentVie,
+      brands: brands.map((b) => ({
+        id: b.id,
+        name: LangKey.ENG === params.langKey ? b.name.contentEng : b.name.contentVie,
+      })),
+      productCount: arrProduct == null ? 0 : arrProduct.length,
+    };
+    data.push(item);
+  });
+  return {
+    data: data,
+    total: data.length,
   };
 }
