@@ -57,7 +57,7 @@ connectToDatabase()
 
     const admin = await userRepository.findOne({ email: 'cogioiducanh@gmail.com' });
     if (!admin) {
-      const password = await hash('123456', config.auth.SaltRounds);
+      const password = await hash('2C3d4E5f6A1b', config.auth.SaltRounds);
 
       const admin = new User();
       admin.id = 1;
