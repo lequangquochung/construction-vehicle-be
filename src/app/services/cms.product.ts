@@ -274,10 +274,10 @@ export async function deleteProductById(id: number) {
 interface ISearchProduct extends NewPagingParams {
   keyword?: string;
   type?: string;
-  isDiscount?: boolean;
+  isDiscount?: string;
   brandId?: number;
   categoryId?: number;
-  isHot?: boolean;
+  isHot?: string;
 }
 
 export async function getListProduct(params: ISearchProduct) {
@@ -328,13 +328,13 @@ export async function getListProduct(params: ISearchProduct) {
     });
   }
 
-  if (params.isDiscount != null) {
+  if (params.isDiscount != null && params.isDiscount != '') {
     query.andWhere('p.isDiscount = :isDiscount', {
       isDiscount: convertDataConfig('BOOLEAN', params.isDiscount),
     });
   }
 
-  if (params.isHot != null) {
+  if (params.isHot != null && params.isHot != '') {
     query.andWhere('p.isHot = :isHot', {
       isDiscount: convertDataConfig('BOOLEAN', params.isHot),
     });
