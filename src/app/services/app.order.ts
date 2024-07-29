@@ -42,7 +42,7 @@ export async function userGetOrders(params: IUserSearchOrder) {
       'od.price as price',
       'pnt.contentEng as productName',
     ])
-    .where('1=1');
+    .where('o.isDeleted IS FALSE');
 
   if (params.phoneNumber) {
     query.andWhere('o.phoneNumber = :phoneNumber', {
@@ -197,6 +197,10 @@ export async function userGetOwnOrderDetail(id: number, userId: number, langKey:
 
   if (!order) {
     throw ErrorCode.Order_Not_exist;
+  }
+
+  if (order.isDeleted) {
+    throw ErrorCode.Order_Deleted;
   }
 
   if (order.user.id !== userId) {
