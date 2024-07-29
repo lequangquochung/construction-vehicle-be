@@ -41,7 +41,7 @@ export default class OrderController {
     return await service.finishOrder(Number(req.params.id));
   }
 
-  @Put('/:id/process')
+  @Put('/:id/processing')
   @RequirePermission([ROLE.ADMIN])
   async setProcessOrder(req: Request) {
     return await service.setProcessOrder(Number(req.params.id));
