@@ -42,6 +42,9 @@ export default class Order {
   @Column({ name: 'note', type: 'text' })
   note: string;
 
+  @Column({ name: 'isDeleted', type: 'boolean', default: false })
+  isDeleted: boolean;
+
   @OneToMany(() => OrderDetail, (orderDetail) => orderDetail.order)
   orderDetails: OrderDetail[];
 

@@ -3,7 +3,7 @@ import OrderDetail from '$entities/OrderDetail';
 import Product from '$entities/Product';
 import User from '$entities/User';
 import { ErrorCode, OrderStatus } from '$enums/index';
-import { assignPaging, returnPaging } from '$helpers/utils';
+import { assignPaging, convertDataConfig, returnPaging } from '$helpers/utils';
 import { NewPagingParams } from '$interfaces/common';
 import moment from 'moment';
 import { EntityManager, getConnection, getRepository } from 'typeorm';
@@ -81,9 +81,7 @@ export async function finishOrder(orderId: number) {
     if (!order) {
       throw ErrorCode.Order_Not_exist;
     }
-    if (order.status !== OrderStatus.PROCESSING) {
-      throw ErrorCode.Order_Must_Be_Processing;
-    }
+
     await orderRepo.update(orderId, {
       status: OrderStatus.FINISHED,
     });
@@ -153,6 +151,7 @@ export async function getOrderById(orderId: number) {
     createdDate: order.createdDate,
     orderDetails: orderDetails,
     note: order.note,
+    isDeleted: order.isDeleted,
   };
 }
 
@@ -161,6 +160,7 @@ interface ISearchOrder extends NewPagingParams {
   status?: string;
   startDate?: Date;
   endDate?: Date;
+  isDeleted?: string;
 }
 
 export async function getOrders(params: ISearchOrder) {
@@ -180,6 +180,7 @@ export async function getOrders(params: ISearchOrder) {
       'o.totalPrice as totalPrice',
       'o.createdDate as createdDate',
       'o.note as note',
+      'o.isDeleted as isDeleted',
     ])
     .orderBy('o.id', 'ASC')
     .where('1=1');
@@ -194,19 +195,28 @@ export async function getOrders(params: ISearchOrder) {
       }
     );
   }
+
   if (params.status) {
     query.andWhere('o.status = :status', {
       status: params.status,
     });
   }
+
   if (params.startDate) {
     query.andWhere('o.createdDate >= :startDate', {
       startDate: params.startDate,
     });
   }
+
   if (params.endDate) {
     query.andWhere('o.createdDate <= :endDate', {
       endDate: params.endDate,
+    });
+  }
+
+  if (params.isDeleted != null && params.isDeleted != '') {
+    query.andWhere('o.isDeleted = :isDeleted', {
+      isDeleted: convertDataConfig('BOOLEAN', params.isDeleted),
     });
   }
   query.offset(params.skip).limit(params.pageSize);
@@ -229,6 +239,7 @@ export async function getOrders(params: ISearchOrder) {
         status: o.status,
         totalPrice: o.totalPrice,
         note: o.note,
+        isDeleted: o.isDeleted,
         createdDate: moment(o.createdDate).format('YYYY-MM-DD HH:mm:ss'),
       })),
     },
@@ -304,6 +315,21 @@ export async function updateOrder(params: UpdateOrderDTO) {
       totalPrice: totalPrice,
       note: params.note,
       name: params.name,
+    });
+  });
+}
+
+export async function deleteOrder(id: number) {
+  return await getConnection().transaction(async (transaction: EntityManager) => {
+    const orderRepo = transaction.getRepository(Order);
+    const order = await orderRepo.findOne(id);
+
+    if (!order) {
+      throw ErrorCode.Order_Not_exist;
+    }
+
+    await orderRepo.update(id, {
+      isDeleted: true,
     });
   });
 }

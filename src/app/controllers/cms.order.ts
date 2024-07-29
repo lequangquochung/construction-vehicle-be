@@ -1,6 +1,6 @@
 import { ROLE } from '$enums/index';
 import { validate } from '$helpers/ajv';
-import { CMS, Get, Post, Put, RequirePermission } from '$helpers/decorator';
+import { CMS, Delete, Get, Post, Put, RequirePermission } from '$helpers/decorator';
 import { createOrderSchema, updateOrderSchema } from '$validators/cms.order';
 import { Request } from 'express';
 import * as service from '$services/cms.order';
@@ -27,6 +27,12 @@ export default class OrderController {
     const body = req.body;
     validate(updateOrderSchema, body);
     return await service.updateOrder(body);
+  }
+
+  @Delete('/:id')
+  @RequirePermission([ROLE.ADMIN])
+  async deleteOrder(req: Request) {
+    return await service.deleteOrder(Number(req.params.id));
   }
 
   @Put('/:id/finished')
