@@ -22,7 +22,7 @@ export function returnPaging(data: any, totalItems: number, params: any, metadat
 
 export function assignPaging(params) {
   params.pageIndex = Number(params.pageIndex) || 1;
-  params.pageSize = Number(params.pageSize) || 10;
+  params.pageSize = Number(params.pageSize) || 999;
   params.skip = (params.pageIndex - 1) * params.pageSize;
   return params;
 }

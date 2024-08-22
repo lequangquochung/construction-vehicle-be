@@ -9,11 +9,13 @@ export default class QuestionController {
   @Get('/')
   @RequirePermission([ROLE.ADMIN])
   async getQuestions(req: Request) {
-    const { titleIds, isRead, keyword } = req.query;
+    const { titleIds, isRead, keyword, pageSize, pageIndex } = req.query;
     return await service.getQuestions({
       keyword: keyword ? keyword + '' : null,
       titleIds: titleIds ? titleIds + '' : null,
       isRead: isRead != null && isRead != '' ? convertDataConfig('BOOLEAN', isRead) : null,
+      pageIndex: Number(pageIndex),
+      pageSize: Number(pageSize),
     });
   }
 
