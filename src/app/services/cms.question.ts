@@ -3,7 +3,6 @@ import Question from '$entities/Question';
 import QuestionTitle from '$entities/QuestionTitle';
 import { NewPagingParams } from '$interfaces/common';
 import { assignPaging, returnPaging } from '$helpers/utils';
-import { forEach } from 'lodash';
 
 interface ISearchQuestion extends NewPagingParams {
   keyword?: string;
@@ -43,6 +42,7 @@ export async function getQuestions(params: ISearchQuestion) {
       isRead: params.isRead,
     });
   }
+  query.offset(params.skip).limit(params.pageSize);
 
   const total = await query.getCount();
   const data = await query.getRawMany();
