@@ -14,11 +14,11 @@ export default class OrderDetail {
   @PrimaryGeneratedColumn({ name: 'id', type: 'int', unsigned: true })
   id: number;
 
-  @ManyToOne(() => Product)
+  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  @ManyToOne(() => Order)
+  @ManyToOne(() => Order, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'order_id' })
   order: Order;
 

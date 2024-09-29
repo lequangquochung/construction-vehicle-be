@@ -256,8 +256,6 @@ export async function deleteProductById(id: number) {
       relations: ['name', 'description'],
     });
 
-    console.log({product})
-
     if (!product) {
       throw ErrorCode.Product_Not_Exist;
     }
