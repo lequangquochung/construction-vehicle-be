@@ -104,6 +104,7 @@ export async function userGetSideBar(params: ISideBar) {
     const arrProduct = products.filter((p) => p.categoryId == c.id);
     let item = {
       categoryId: c.id,
+      image: c.image,
       categoryName: LangKey.ENG === params.langKey ? c.name.contentEng : c.name.contentVie,
       brands: brands.map((b) => ({
         id: b.id,
