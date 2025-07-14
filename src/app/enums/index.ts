@@ -105,3 +105,8 @@ export enum ProductType {
   VEHICLE = 'VEHICLE',
   SPARE_PARTS = 'SPARE_PARTS',
 }
+
+export enum ImageType {
+  COVER = 'COVER',
+  BACKGROUND_IMAGE = 'BACKGROUND_IMAGE'
+}
