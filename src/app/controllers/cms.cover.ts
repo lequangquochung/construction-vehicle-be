@@ -1,7 +1,7 @@
 import { ROLE } from "$enums/index";
 import { validate } from "$helpers/ajv";
 import { CMS, Get, Post, RequirePermission } from "$helpers/decorator";
-import { changeCoverShema } from "$validators/cms.cover";
+import { changeCoverSchema } from "$validators/cms.cover";
 import { Request } from "express";
 import * as service from '$services/cms.cover';
 
@@ -11,7 +11,7 @@ export default class CoverController {
     @RequirePermission([ROLE.ADMIN])
     async changeCover(req: Request) {
       const body = req.body;
-      validate(changeCoverShema, body);
+      validate(changeCoverSchema, body);
       return await service.changeCover(body);
     }
 
