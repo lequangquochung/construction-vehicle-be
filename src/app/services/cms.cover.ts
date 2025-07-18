@@ -3,11 +3,10 @@ import { ImageType } from '$enums/index';
 import { EntityManager, getConnection } from 'typeorm';
 
 interface CreateCoverDTO {
-  title: string;
-  srcImage: string;
+  srcImages: string[];
 }
 
-export async function changeCover(params: CreateCoverDTO[]) {
+export async function changeCover(params: CreateCoverDTO) {
   return await getConnection().transaction(async (transaction: EntityManager) => {
     const imageRepo = transaction.getRepository(Image);
 
@@ -17,11 +16,11 @@ export async function changeCover(params: CreateCoverDTO[]) {
       await imageRepo.delete(covers.map((e) => e.id));
     }
 
-    const imagesToSave = params.map((e) => {
+    const imagesToSave = params.srcImages.map((e) => {
       const image = new Image();
-      image.title = e.title;
-      image.srcImage = e.srcImage;
+      image.srcImage = e;
       image.type = ImageType.COVER;
+      image.title = "COVER_" + e;
       return image;
     });
 
