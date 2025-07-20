@@ -5,7 +5,6 @@ export const changeCoverSchema: AjvSchema = {
   properties: {
     srcImages: {
       type: 'array',
-      minItems: 1,
       items: {
         type: 'string',
         maxLength: 255,
